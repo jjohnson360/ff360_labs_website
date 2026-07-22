@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ff360_labs — Always building something new.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --bg: #0a0a0b;
+    --bg-soft: #121214;
+    --bg-card: #17171a;
+    --line: rgba(201,161,90,0.16);
+    --line-silver: rgba(185,192,196,0.16);
+
+    --gold-light: #f0d28a;
+    --gold: #c9a15a;
+    --gold-dark: #8a6a2f;
+
+    --silver-light: #eef0f1;
+    --silver: #b9c0c4;
+    --silver-dark: #6f767b;
+
+    --text: #f2efe9;
+    --text-dim: #a7a49c;
+    --text-faint: #6c6a64;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  }
+
+  a{ color: inherit; text-decoration: none; }
+  .wrap{ max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+  ::selection{ background: var(--gold-dark); color: var(--bg); }
+
+  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible{
+    outline: 2px solid var(--gold-light);
+    outline-offset: 3px;
+  }
+
+  .metal-gold{
+    background: linear-gradient(115deg, var(--gold-dark) 0%, var(--gold-light) 32%, var(--gold) 55%, var(--gold-light) 78%, var(--gold-dark) 100%);
+    background-size: 220% 220%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .metal-silver{
+    background: linear-gradient(115deg, var(--silver-dark) 0%, var(--silver-light) 32%, var(--silver) 55%, var(--silver-light) 78%, var(--silver-dark) 100%);
+    background-size: 220% 220%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* ---------- blueprint grid texture ---------- */
+  .blueprint-grid{
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 0%, transparent 75%);
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 0%, transparent 75%);
+    pointer-events: none;
+  }
+
+  .corner{
+    position:absolute;
+    width: 22px; height: 22px;
+    border-color: var(--gold-dark);
+    z-index: 3;
+  }
+  .corner.tl{ top: 26px; left: 26px; border-top: 1px solid; border-left: 1px solid; }
+  .corner.tr{ top: 26px; right: 26px; border-top: 1px solid; border-right: 1px solid; }
+  .corner.bl{ bottom: 26px; left: 26px; border-bottom: 1px solid; border-left: 1px solid; }
+  .corner.br{ bottom: 26px; right: 26px; border-bottom: 1px solid; border-right: 1px solid; }
+
+  /* ---------- header ---------- */
+  header{
+    position: fixed; top:0; left:0; right:0; z-index: 50;
+    background: rgba(10,10,11,0.72);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  header .wrap{ display:flex; align-items:center; justify-content: space-between; height: 76px; }
+  .brand{ font-family:'Fraunces', serif; font-style: italic; font-weight: 500; font-size: 1.3rem; letter-spacing: 0.01em; }
+  .brand span{ font-family:'Inter', sans-serif; font-style: normal; font-weight: 600; letter-spacing: 0.02em; }
+  nav{ display:flex; gap: 40px; }
+  nav a{ font-family:'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); transition: color .25s ease; }
+  nav a:hover{ color: var(--gold-light); }
+
+  /* ---------- hero ---------- */
+  .hero{
+    position: relative;
+    min-height: 100svh;
+    display:flex; flex-direction: column; align-items:center; justify-content:center;
+    text-align:center;
+    padding: 140px 32px 80px;
+    overflow: hidden;
+  }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.72rem; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 28px;
+    display:flex; align-items:center; gap: 12px;
+    z-index: 2;
+  }
+  .eyebrow::before, .eyebrow::after{ content:''; width: 28px; height: 1px; background: var(--gold-dark); }
+
+  .hero h1{
+    font-family:'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(3rem, 8.6vw, 6.1rem);
+    line-height: 0.98;
+    letter-spacing: -0.01em;
+    z-index: 2;
+  }
+  .hero h1 em{ font-style: italic; font-weight: 500; }
+
+  .hero p.sub{
+    max-width: 560px; margin: 28px auto 0;
+    color: var(--text-dim); font-size: 1.05rem;
+    z-index: 2;
+  }
+
+  .hero-actions{
+    margin-top: 44px; display:flex; gap: 18px; z-index: 2;
+    flex-wrap: wrap; justify-content:center;
+  }
+
+  .btn{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 15px 30px; border-radius: 2px; transition: all .25s ease;
+    display:inline-block;
+  }
+  .btn-gold{ background: linear-gradient(120deg, var(--gold-dark), var(--gold-light), var(--gold)); color: #14110a; font-weight: 600; }
+  .btn-gold:hover{ filter: brightness(1.12); transform: translateY(-1px); }
+  .btn-ghost{ border: 1px solid var(--line-silver); color: var(--silver-light); }
+  .btn-ghost:hover{ border-color: var(--silver); background: rgba(255,255,255,0.03); }
+
+  .tagline-strip{
+    margin-top: 60px;
+    z-index: 2;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    display:flex; align-items:center; gap: 14px;
+  }
+  .tagline-strip .dot{ width:5px; height:5px; border-radius:50%; background: var(--gold); }
+
+  .waveform{ display:flex; align-items:center; justify-content:center; gap: 3px; height: 34px; margin-top: 16px; z-index:2; opacity: 0.6; }
+  .waveform span{ display:block; width: 2px; border-radius: 1px; background: linear-gradient(180deg, var(--silver), var(--gold)); animation: wf 1.8s ease-in-out infinite; }
+  @keyframes wf{ 0%,100%{ transform: scaleY(0.3); } 50%{ transform: scaleY(1); } }
+
+  .scroll-cue{ position:absolute; bottom: 34px; font-family:'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; color: var(--text-faint); text-transform: uppercase; z-index: 2; }
+
+  /* ---------- shared section ---------- */
+  section{ position: relative; }
+  .section-pad{ padding: 130px 0; }
+  .divider{ height: 1px; background: linear-gradient(90deg, transparent, var(--line) 30%, var(--line) 70%, transparent); }
+  .kicker{ font-family:'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--silver); margin-bottom: 18px; }
+  h2{ font-family:'Fraunces', serif; font-weight: 600; font-size: clamp(2rem, 4vw, 2.9rem); letter-spacing: -0.01em; max-width: 640px; }
+
+  /* ---------- services ---------- */
+  .services-head{ display:flex; justify-content: space-between; align-items: flex-end; gap: 40px; margin-bottom: 70px; flex-wrap: wrap; }
+  .services-head p{ color: var(--text-dim); max-width: 340px; font-size: 0.95rem; }
+  .services-list{ border-top: 1px solid var(--line); }
+  .service-row{ display:grid; grid-template-columns: 70px 1fr auto; align-items:center; gap: 28px; padding: 30px 0; border-bottom: 1px solid var(--line); transition: background .25s ease; }
+  .service-row:hover{ background: rgba(201,161,90,0.035); }
+  .service-icon{ width: 42px; height: 42px; stroke: var(--gold); fill: none; stroke-width: 1.4; transition: stroke .3s ease, transform .3s ease; }
+  .service-row:nth-child(even) .service-icon{ stroke: var(--silver); }
+  .service-row:hover .service-icon{ transform: scale(1.08); }
+  .service-name{ font-family:'Fraunces', serif; font-weight: 500; font-size: 1.5rem; }
+  .service-desc{ color: var(--text-dim); font-size: 0.88rem; margin-top: 4px; max-width: 480px; }
+  .service-tag{ font-family:'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.1em; color: var(--text-faint); white-space: nowrap; }
+
+  /* ---------- process ---------- */
+  .process{ background: var(--bg-soft); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .process-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin-top: 60px; background: var(--line); border: 1px solid var(--line); }
+  .process-step{ background: var(--bg-soft); padding: 38px 30px; }
+  .process-num{ font-family:'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em; color: var(--gold); }
+  .process-step:nth-child(even) .process-num{ color: var(--silver); }
+  .process-title{ font-family:'Fraunces', serif; font-style: italic; font-weight: 500; font-size: 1.3rem; margin-top: 16px; }
+  .process-desc{ color: var(--text-dim); font-size: 0.85rem; margin-top: 14px; }
+  .process-desc li{ list-style:none; margin-top: 6px; padding-left: 14px; position:relative; }
+  .process-desc li::before{ content:'—'; position:absolute; left:0; color: var(--text-faint); }
+  .process-deliv{ margin-top: 20px; font-family:'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); }
+  .process-deliv b{ color: var(--gold-light); font-weight: 500; display:block; margin-top:4px; }
+
+  /* ---------- pricing ---------- */
+  .pricing-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 60px; border: 1px solid var(--line); }
+  .price-card{ background: var(--bg-card); padding: 44px 34px; display:flex; flex-direction: column; }
+  .price-card.featured{ background: #1b1a16; }
+  .price-tag{ font-family:'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); }
+  .price-name{ font-family:'Fraunces', serif; font-weight: 500; font-size: 1.6rem; margin-top: 14px; }
+  .price-amount{ font-family:'Fraunces', serif; font-weight: 600; font-size: 1.9rem; margin-top: 10px; }
+  .price-list{ margin-top: 26px; list-style:none; flex-grow:1; }
+  .price-list li{ color: var(--text-dim); font-size: 0.88rem; padding: 8px 0; border-top: 1px solid var(--line-silver); }
+  .price-list li:first-child{ border-top:none; }
+  .price-for{ margin-top: 20px; color: var(--text-faint); font-family:'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.06em; }
+
+  .exp-badge{
+    display: inline-block;
+    margin-top: 10px;
+    padding: 3px 9px;
+    border: 1px solid var(--gold-dark);
+    border-radius: 2px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold-light);
+    width: fit-content;
+  }
+
+  .pricing-note{
+    margin-top: 30px;
+    max-width: 640px;
+    color: var(--text-dim);
+    font-size: 0.88rem;
+    border-left: 2px solid var(--gold-dark);
+    padding-left: 20px;
+  }
+
+  /* ---------- work ---------- */
+  .work-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap: 2px; margin-top: 60px; border: 1px solid var(--line); }
+  .work-card{ background: var(--bg-card); padding: 44px 36px; min-height: 260px; display:flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; transition: background .3s ease; }
+  .work-card:hover{ background: #1c1c1f; }
+  .work-tag{ font-family:'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); }
+  .work-card:nth-child(even) .work-tag{ color: var(--silver); }
+  .work-title{ font-family:'Fraunces', serif; font-weight: 500; font-size: 1.65rem; margin-top: 14px; max-width: 320px; }
+  .work-meta{ margin-top: 30px; display:flex; justify-content: space-between; align-items:center; color: var(--text-faint); font-family:'JetBrains Mono', monospace; font-size: 0.72rem; }
+  .arrow{ width: 20px; height: 20px; stroke: var(--text-dim); fill:none; stroke-width: 1.4; transition: transform .25s ease; }
+  .work-card:hover .arrow{ transform: translate(4px,-4px); }
+
+  /* ---------- contact ---------- */
+  .contact{ background: var(--bg-soft); border-top: 1px solid var(--line); position: relative; }
+  .contact-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 80px; }
+  .field{ margin-bottom: 26px; }
+  .field label{ display:block; font-family:'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 10px; }
+  .field input, .field textarea{ width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--line-silver); color: var(--text); font-family:'Inter', sans-serif; font-size: 1rem; padding: 10px 2px; transition: border-color .25s ease; }
+  .field input:focus, .field textarea:focus{ border-color: var(--gold); outline: none; }
+  .field textarea{ resize: vertical; min-height: 90px; }
+  .contact-info dt{ font-family:'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); margin-top: 26px; }
+  .contact-info dt:first-child{ margin-top: 0; }
+  .contact-info dd{ font-family:'Fraunces', serif; font-size: 1.25rem; margin-top: 6px; }
+  .socials{ display:flex; gap: 22px; margin-top: 34px; }
+  .socials a{ font-family:'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.08em; color: var(--text-dim); border-bottom: 1px solid transparent; padding-bottom: 2px; transition: all .25s ease; }
+  .socials a:hover{ color: var(--gold-light); border-color: var(--gold-dark); }
+
+  footer{ padding: 40px 0; border-top: 1px solid var(--line); }
+  footer .wrap{ display:flex; justify-content: space-between; align-items:center; flex-wrap: wrap; gap: 16px; }
+  footer .fbrand{ font-family:'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-faint); }
+  footer .ftag{ font-family:'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-faint); letter-spacing: 0.05em; }
+
+  @media (max-width: 860px){
+    nav{ display:none; }
+    .about-grid, .contact-grid{ grid-template-columns: 1fr; gap: 40px; }
+    .work-grid, .process-grid, .pricing-grid{ grid-template-columns: 1fr; }
+    .service-row{ grid-template-columns: 50px 1fr; }
+    .service-tag{ display:none; }
+    .corner{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">ff<span>360</span>_labs</div>
+    <nav>
+      <a href="#services">Services</a>
+      <a href="#process">Process</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#work">Work</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="blueprint-grid"></div>
+  <span class="corner tl"></span>
+  <span class="corner tr"></span>
+  <span class="corner bl"></span>
+  <span class="corner br"></span>
+
+  <div class="eyebrow">Creative Technology Studio</div>
+
+  <h1>
+    Always building<br>
+    <em class="metal-gold">something</em><br>
+    <span class="metal-silver">new.</span>
+  </h1>
+
+  <p class="sub">
+    ff360_labs designs and builds websites, interactive experiences, 3D work,
+    and creative software — for small businesses, artists, and anyone with an
+    idea that doesn't fit a template.
+  </p>
+
+  <div class="hero-actions">
+    <a class="btn btn-gold" href="#contact">Start a Project</a>
+    <a class="btn btn-ghost" href="#work">See the Work</a>
+  </div>
+
+  <div class="tagline-strip"><span class="dot"></span>PROJECT DISCOVERY OPEN<span class="dot"></span></div>
+  <div class="waveform" id="waveform" aria-hidden="true"></div>
+
+  <div class="scroll-cue">Scroll ↓</div>
+</section>
+
+<div class="divider"></div>
+
+<section class="section-pad" id="services">
+  <div class="wrap">
+    <div class="services-head">
+      <div>
+        <div class="kicker">What Gets Built</div>
+        <h2>Six disciplines, one studio.</h2>
+      </div>
+      <p>Every project draws on some combination of these — scoped up front
+        so nothing gets lost between phases.</p>
+    </div>
+
+    <div class="services-list">
+
+      <div class="service-row">
+        <svg class="service-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="1"/><path d="M3 8h18M7 18v3M17 18v3"/></svg>
+        <div>
+          <div class="service-name">Website Design &amp; Development</div>
+          <div class="service-desc">Small business, portfolio, and product sites — designed and built end to end.</div>
+        </div>
+        <div class="service-tag">01 / WEB</div>
+      </div>
+
+      <div class="service-row">
+        <svg class="service-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <div>
+          <div class="service-name">Interactive Web Experiences</div>
+          <div class="service-desc">Custom interfaces and animation-driven pages that go past the standard template.</div>
+        </div>
+        <div class="service-tag">02 / INTERACTIVE</div>
+      </div>
+
+      <div class="service-row">
+        <svg class="service-icon" viewBox="0 0 24 24"><path d="M12 2l9 5v10l-9 5-9-5V7l9-5z"/><path d="M3 7l9 5 9-5M12 12v10"/></svg>
+        <div>
+          <div class="service-name">3D Modeling &amp; Visualization</div>
+          <div class="service-desc">Procedural, game-ready 3D assets and environments — built in Blender, staged for Unity.</div>
+        </div>
+        <div class="service-tag">03 / 3D</div>
+      </div>
+
+      <div class="service-row">
+        <svg class="service-icon" viewBox="0 0 24 24"><path d="M8 5L2 12l6 7M16 5l6 7-6 7"/></svg>
+        <div>
+          <div class="service-name">Creative Coding &amp; Automation</div>
+          <div class="service-desc">Custom tools and integrations — API syncs, generative scripts, AI-assisted pipelines.</div>
+        </div>
+        <div class="service-tag">04 / CODE</div>
+      </div>
+
+      <div class="service-row">
+        <svg class="service-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18M3 12h18"/></svg>
+        <div>
+          <div class="service-name">Branding &amp; Digital Identity</div>
+          <div class="service-desc">Logo systems, color and type direction, and the guidelines that keep a brand consistent.</div>
+        </div>
+        <div class="service-tag">05 / BRAND</div>
+      </div>
+
+      <div class="service-row">
+        <svg class="service-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <div>
+          <div class="service-name">Music Technology Projects</div>
+          <div class="service-desc">Production, mixing, and the tools that support an artist's release workflow.</div>
+        </div>
+        <div class="service-tag">06 / MUSIC TECH</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="process" id="process">
+  <div class="wrap section-pad">
+    <div class="kicker">How A Project Runs</div>
+    <h2>Four phases, from idea to live product.</h2>
+
+    <div class="process-grid">
+      <div class="process-step">
+        <div class="process-num">01</div>
+        <div class="process-title">Discover</div>
+        <ul class="process-desc">
+          <li>Your business</li>
+          <li>Your audience</li>
+          <li>Your goals</li>
+          <li>Your vision</li>
+        </ul>
+        <div class="process-deliv">Deliverable<b>Project Brief</b></div>
+      </div>
+      <div class="process-step">
+        <div class="process-num">02</div>
+        <div class="process-title">Design</div>
+        <ul class="process-desc">
+          <li>Site structure</li>
+          <li>Visual direction</li>
+          <li>User experience</li>
+          <li>Branding elements</li>
+        </ul>
+        <div class="process-deliv">Deliverable<b>Design Prototype</b></div>
+      </div>
+      <div class="process-step">
+        <div class="process-num">03</div>
+        <div class="process-title">Build</div>
+        <ul class="process-desc">
+          <li>Responsive website</li>
+          <li>Interactive features</li>
+          <li>Optimization</li>
+          <li>Testing</li>
+        </ul>
+        <div class="process-deliv">Deliverable<b>Working Website</b></div>
+      </div>
+      <div class="process-step">
+        <div class="process-num">04</div>
+        <div class="process-title">Launch</div>
+        <ul class="process-desc">
+          <li>Deployment</li>
+          <li>Domain setup</li>
+          <li>SEO basics</li>
+          <li>Training</li>
+        </ul>
+        <div class="process-deliv">Deliverable<b>Live Product</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-pad" id="pricing">
+  <div class="wrap">
+    <div class="kicker">Starting Points</div>
+    <h2>Three ways to begin.</h2>
+
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-tag">For Small Businesses</div>
+        <div class="price-name">Launch</div>
+        <div class="price-amount metal-gold">$750–$1,500</div>
+        <ul class="price-list">
+          <li>3–5 pages</li>
+          <li>Mobile design</li>
+          <li>Contact form</li>
+          <li>Basic SEO</li>
+        </ul>
+        <div class="price-for">Small businesses · personal brands · simple portfolios</div>
+      </div>
+      <div class="price-card featured">
+        <div class="price-tag">For Growing Brands</div>
+        <div class="price-name">Growth</div>
+        <div class="price-amount metal-gold">$1,500–$3,000</div>
+        <ul class="price-list">
+          <li>5–10 pages</li>
+          <li>Custom design</li>
+          <li>Animations</li>
+          <li>CMS integration</li>
+          <li>Analytics</li>
+        </ul>
+        <div class="price-for">Established businesses · creators · organizations</div>
+      </div>
+      <div class="price-card">
+        <div class="price-tag">For Custom Builds</div>
+        <span class="exp-badge">Experimental</span>
+        <div class="price-name">Innovation</div>
+        <div class="price-amount metal-silver">Custom</div>
+        <ul class="price-list">
+          <li>Advanced UI</li>
+          <li>3D assets</li>
+          <li>Custom development</li>
+          <li>Experimental features</li>
+        </ul>
+        <div class="price-for">Interactive sites · 3D experiences · web apps · custom tools</div>
+      </div>
+    </div>
+
+    <p class="pricing-note">
+      <span class="metal-gold">Innovation</span> projects push past standard web
+      development — 3D scenes, custom interfaces, generative or automated
+      systems. Because the scope is less predictable, these start with a paid
+      discovery phase to define feasibility and timeline before a final quote
+      or commitment, and typically run longer than a Launch or Growth project.
+    </p>
+  </div>
+</section>
+
+<section class="section-pad" id="work" style="background:var(--bg-soft); border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
+  <div class="wrap">
+    <div class="kicker">Selected Work</div>
+    <h2>A few things worth showing.</h2>
+
+    <div class="work-grid">
+      <div class="work-card">
+        <div>
+          <div class="work-tag">Software</div>
+          <div class="work-title">Retail Inventory Sync Engine</div>
+        </div>
+        <div class="work-meta">
+          <span>Square × Shopify API</span>
+          <svg class="arrow" viewBox="0 0 24 24"><path d="M7 17L17 7M7 7h10v10"/></svg>
+        </div>
+      </div>
+
+      <div class="work-card">
+        <div>
+          <div class="work-tag">3D / Environment</div>
+          <div class="work-title">Victorian Apothecary Scene</div>
+        </div>
+        <div class="work-meta">
+          <span>Blender → Unity, procedural</span>
+          <svg class="arrow" viewBox="0 0 24 24"><path d="M7 17L17 7M7 7h10v10"/></svg>
+        </div>
+      </div>
+
+      <div class="work-card">
+        <div>
+          <div class="work-tag">Brand</div>
+          <div class="work-title">ff360 Identity System</div>
+        </div>
+        <div class="work-meta">
+          <span>Logo, mark, guidelines</span>
+          <svg class="arrow" viewBox="0 0 24 24"><path d="M7 17L17 7M7 7h10v10"/></svg>
+        </div>
+      </div>
+
+      <div class="work-card">
+        <div>
+          <div class="work-tag">Music Tech</div>
+          <div class="work-title">Original Score &amp; Mix</div>
+        </div>
+        <div class="work-meta">
+          <span>Full production</span>
+          <svg class="arrow" viewBox="0 0 24 24"><path d="M7 17L17 7M7 7h10v10"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="wrap section-pad">
+    <div class="kicker">Get In Touch</div>
+    <h2>Tell me what you're building.</h2>
+
+    <div class="contact-grid" style="margin-top:60px;">
+      <form onsubmit="return false;">
+        <div class="field">
+          <label for="name">Name</label>
+          <input id="name" type="text" placeholder="Your name">
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="you@email.com">
+        </div>
+        <div class="field">
+          <label for="msg">Project</label>
+          <textarea id="msg" placeholder="What are you trying to build?"></textarea>
+        </div>
+        <button class="btn btn-gold" type="submit">Send</button>
+      </form>
+
+      <dl class="contact-info">
+        <dt>Email</dt>
+        <dd>hello@ff360labs.com</dd>
+        <dt>Based In</dt>
+        <dd>Conway, Arkansas</dd>
+        <dt>Availability</dt>
+        <dd>Booking new projects</dd>
+      </dl>
+      <div class="socials">
+        <a href="#">Instagram</a>
+        <a href="#">GitHub</a>
+        <a href="#">YouTube</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="fbrand">© 2026 ff360_labs</div>
+    <div class="ftag">Always building something new.</div>
+  </div>
+</footer>
+
+<script>
+  const wf = document.getElementById('waveform');
+  const barCount = 32;
+  for(let i=0;i<barCount;i++){
+    const bar = document.createElement('span');
+    const h = 8 + Math.random()*22;
+    bar.style.height = h + 'px';
+    bar.style.animationDelay = (Math.random()*1.8) + 's';
+    bar.style.animationDuration = (1.3 + Math.random()*1.2) + 's';
+    wf.appendChild(bar);
+  }
+
+  let t = 0;
+  function shimmer(){
+    t += 0.15;
+    const pos = (Math.sin(t/40) * 50 + 50).toFixed(1);
+    document.querySelectorAll('.metal-gold, .metal-silver').forEach(el=>{
+      el.style.backgroundPosition = pos + '% 50%';
+    });
+    requestAnimationFrame(shimmer);
+  }
+  shimmer();
+</script>
+
+</body>
+</html>
