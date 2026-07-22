@@ -1,17 +1,14 @@
 import Link from "next/link";
-import Hero3D from "@/components/Hero3D";
 
 export default function Home() {
   return (
-    <div className="relative min-h-[calc(100vh-76px)] flex flex-col items-center justify-center text-center px-8 pb-20 pt-10">
-      <Hero3D />
-
+    <div className="relative min-h-[90vh] flex flex-col justify-center overflow-hidden">
       <div className="relative z-10 flex flex-col items-center w-full">
         <div className="font-mono text-xs tracking-[0.28em] uppercase text-gold mb-7 flex items-center gap-3 before:content-[''] before:w-7 before:h-px before:bg-gold-dark after:content-[''] after:w-7 after:h-px after:bg-gold-dark">
           Creative Technology Studio
         </div>
 
-        <h1 className="font-display font-semibold text-5xl md:text-7xl leading-[0.98] tracking-tight max-w-4xl">
+        <h1 className="font-display font-semibold text-5xl md:text-7xl leading-[0.98] tracking-tight max-w-4xl text-center">
           Always building<br />
           <em className="metal-gold shimmer-text italic font-medium">something</em><br />
           <span className="metal-silver shimmer-text">new.</span>
