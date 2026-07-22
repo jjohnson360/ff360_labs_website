@@ -571,20 +571,26 @@
     <h2>Tell me what you're building.</h2>
 
     <div class="contact-grid" style="margin-top:60px;">
-      <form onsubmit="return false;">
+      <div data-fs-success style="display:none; color: var(--gold); margin-bottom: 20px; font-family:'JetBrains Mono', monospace; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;">Thanks! Your project discovery request has been received.</div>
+      <div data-fs-error style="display:none; color: red; margin-bottom: 20px; font-family:'JetBrains Mono', monospace; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;"></div>
+
+      <form id="contact-form">
         <div class="field">
           <label for="name">Name</label>
-          <input id="name" type="text" placeholder="Your name">
+          <input id="name" name="name" type="text" placeholder="Your name" data-fs-field>
+          <span data-fs-error="name" style="color:red; font-size: 0.65rem; font-family:'JetBrains Mono', monospace; display:block; margin-top:5px;"></span>
         </div>
         <div class="field">
           <label for="email">Email</label>
-          <input id="email" type="email" placeholder="you@email.com">
+          <input id="email" name="email" type="email" placeholder="you@email.com" data-fs-field>
+          <span data-fs-error="email" style="color:red; font-size: 0.65rem; font-family:'JetBrains Mono', monospace; display:block; margin-top:5px;"></span>
         </div>
         <div class="field">
           <label for="msg">Project</label>
-          <textarea id="msg" placeholder="What are you trying to build?"></textarea>
+          <textarea id="msg" name="message" placeholder="What are you trying to build?" data-fs-field></textarea>
+          <span data-fs-error="message" style="color:red; font-size: 0.65rem; font-family:'JetBrains Mono', monospace; display:block; margin-top:5px;"></span>
         </div>
-        <button class="btn btn-gold" type="submit">Send</button>
+        <button class="btn btn-gold" type="submit" data-fs-submit-btn>Send</button>
       </form>
 
       <dl class="contact-info">
@@ -634,6 +640,12 @@
   }
   shimmer();
 </script>
+
+<script>
+  window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+  formspree('initForm', { formElement: '#contact-form', formId: 'mdaqdrkd' });
+</script>
+<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 
 </body>
 </html>
