@@ -1,59 +1,52 @@
-# ff360_labs
+# ff360_labs Website
 
-> Always building something new.
+The official marketing website for **ff360_labs**, a creative technology studio based in Conway, Arkansas.
+Built with Next.js (App Router), React Three Fiber, Framer Motion, and Tailwind CSS.
 
-**ff360_labs** designs and builds websites, interactive experiences, 3D work, and creative software — for small businesses, artists, and anyone with an idea that doesn't fit a template. 
+## Features
 
-🌐 **Live Website:** [https://jjohnson360.github.io/ff360_labs_website/](https://jjohnson360.github.io/ff360_labs_website/)
+- **Next.js 14+ App Router**: Fast, server-rendered React application.
+- **WebGL 3D Hero**: A custom 3D element built with `@react-three/fiber` and `@react-three/drei`. Features a fallback for devices with reduced motion enabled.
+- **Glassmorphism UI**: Custom Tailwind configuration implementing a high-tech, industrial luxury aesthetic (deep blacks, metallic golds, and silvers).
+- **Smooth Animations**: Scroll-linked reveals and micro-interactions powered by `framer-motion`.
 
-This repository contains the front-end source code for the official studio website.
+## Tech Stack
 
-## 🛠 Tech Stack & Architecture
+- **Framework**: [Next.js](https://nextjs.org/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **3D Engine**: [Three.js](https://threejs.org/) + [React Three Fiber](https://r3f.docs.pmnd.rs/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Typography**: `next/font/google` (Fraunces, Inter, JetBrains Mono)
 
-This project is built as a lightweight, high-performance static site prioritizing speed and zero-dependency maintenance.
+## Getting Started
 
-*   **HTML5 / CSS3:** Semantic markup with custom CSS properties for dynamic theming, including custom blueprint grids and metallic gradient text.
-*   **Typography:** Hosted via Google Fonts using *Fraunces* (Serif), *Inter* (Sans-Serif), and *JetBrains Mono* (Monospace).
-*   **JavaScript:** Vanilla JS utilized for the continuous waveform animation and dynamic background position rendering on metallic text elements.
-*   **Form Handling:** Serverless form submissions routed through the `@formspree/ajax` package.
-*   **Hosting:** Configured for automated deployment via GitHub Pages.
+First, install dependencies:
 
-## ⚙️ Studio Disciplines
+```bash
+npm install
+```
 
-The studio integrates six core technical and creative disciplines:
+Then, run the development server:
 
-1.  **Website Design & Development:** Small business, portfolio, and product sites — designed and built end to end.
-2.  **Interactive Web Experiences:** Custom interfaces and animation-driven pages that go past the standard template.
-3.  **3D Modeling & Visualization:** Procedural, game-ready 3D assets and environments — built in Blender, staged for Unity.
-4.  **Creative Coding & Automation:** Custom tools and integrations — API syncs, generative scripts, AI-assisted pipelines.
-5.  **Branding & Digital Identity:** Logo systems, color and type direction, and the guidelines that keep a brand consistent.
-6.  **Music Technology Projects:** Production, mixing, and the tools that support an artist's release workflow.
+```bash
+npm run dev
+```
 
-## 📋 Project Pipeline
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the live site. The application will auto-reload as you make changes to the code.
 
-All client projects follow a strict four-phase operational framework:
+## Project Structure
 
-*   **01 Discover:** Defining business goals, audience, and vision to deliver a Project Brief.
-*   **02 Design:** Establishing site structure, visual direction, and UX to deliver a Design Prototype.
-*   **03 Build:** Developing responsive layouts, interactive features, and optimization to deliver a Working Website.
-*   **04 Launch:** Finalizing deployment, domains, and SEO to deliver a Live Product.
+- `/src/app`: The Next.js App Router. Contains all page routes (`/`, `/services`, `/process`, `/pricing`, `/work`, `/contact`).
+- `/src/components`: Reusable UI components like the `Header`, `Footer`, and `Hero3D` canvas.
+- `/src/app/globals.css`: Contains the global Tailwind design tokens (e.g. `--gold`, `--silver`) and custom CSS utilities (e.g. `.glass-panel`, `.shimmer-text`).
+- `/vanilla_backup`: An archive of the previous version of the site (HTML/CSS/JS).
 
-## 🚀 Local Development
+## Deployment
 
-To run this project locally, no build steps or package managers are required.
+This project is optimized for deployment on [Vercel](https://vercel.com). Simply link your GitHub repository to a new Vercel project, and it will automatically build and deploy.
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/ff360_labs.git
-   ```
+```bash
+npm run build
+```
 
-2. Open the directory:
-   ```bash
-   cd ff360_labs
-   ```
-
-3. Open `index.html` in your browser. You can just double-click the file, or use an extension like VS Code Live Server for hot reloading.
-
-## 📄 License
-
-&copy; 2026 ff360_labs. All rights reserved.
+The build will generate a set of lightning-fast static pages.

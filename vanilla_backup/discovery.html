@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ff360_labs — Project Discovery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0a0b;
+    --bg-soft: #121214;
+    --bg-card: #17171a;
+    --line: rgba(201,161,90,0.16);
+    --line-silver: rgba(185,192,196,0.16);
+
+    --gold-light: #f0d28a;
+    --gold: #c9a15a;
+    --gold-dark: #8a6a2f;
+
+    --silver-light: #eef0f1;
+    --silver: #b9c0c4;
+    --silver-dark: #6f767b;
+
+    --text: #f2efe9;
+    --text-dim: #a7a49c;
+    --text-faint: #6c6a64;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  a{ color: inherit; text-decoration: none; }
+  .wrap{ max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+  ::selection{ background: var(--gold-dark); color: var(--bg); }
+
+  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 2px solid var(--gold-light);
+    outline-offset: 3px;
+  }
+
+  .metal-gold{
+    background: linear-gradient(115deg, var(--gold-dark) 0%, var(--gold-light) 32%, var(--gold) 55%, var(--gold-light) 78%, var(--gold-dark) 100%);
+    background-size: 220% 220%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .metal-silver{
+    background: linear-gradient(115deg, var(--silver-dark) 0%, var(--silver-light) 32%, var(--silver) 55%, var(--silver-light) 78%, var(--silver-dark) 100%);
+    background-size: 220% 220%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* ---------- blueprint grid texture ---------- */
+  .blueprint-grid{
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 0%, transparent 75%);
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 0%, transparent 75%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    position: fixed; top:0; left:0; right:0; z-index: 50;
+    background: rgba(10,10,11,0.72);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  header .wrap{ display:flex; align-items:center; justify-content: space-between; height: 76px; }
+  .brand{ font-family:'Fraunces', serif; font-style: italic; font-weight: 500; font-size: 1.3rem; letter-spacing: 0.01em; position: relative; z-index: 2; }
+  .brand span{ font-family:'Inter', sans-serif; font-style: normal; font-weight: 600; letter-spacing: 0.02em; }
+  nav{ display:flex; gap: 40px; position: relative; z-index: 2; }
+  nav a{ font-family:'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); transition: color .25s ease; }
+  nav a:hover{ color: var(--gold-light); }
+
+  .btn{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 15px 30px; border-radius: 2px; transition: all .25s ease;
+    display:inline-block; border: none; cursor: pointer; text-align: center;
+  }
+  .btn-gold{ background: linear-gradient(120deg, var(--gold-dark), var(--gold-light), var(--gold)); color: #14110a; font-weight: 600; }
+  .btn-gold:hover{ filter: brightness(1.12); transform: translateY(-1px); }
+  .btn-ghost{ border: 1px solid var(--line-silver); color: var(--silver-light); background: transparent; }
+  .btn-ghost:hover{ border-color: var(--silver); background: rgba(255,255,255,0.03); }
+  .btn:disabled{ opacity: 0.5; cursor: not-allowed; transform: none; filter: none; }
+
+  footer{ padding: 40px 0; border-top: 1px solid var(--line); margin-top: auto; position: relative; z-index: 2; background: var(--bg); }
+  footer .wrap{ display:flex; justify-content: space-between; align-items:center; flex-wrap: wrap; gap: 16px; }
+  footer .fbrand{ font-family:'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-faint); }
+  footer .ftag{ font-family:'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-faint); letter-spacing: 0.05em; }
+
+  /* ---------- discovery portal ---------- */
+  .portal-section {
+    position: relative;
+    z-index: 10;
+    padding: 140px 32px 80px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .portal-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .portal-header h1 {
+    font-family:'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    letter-spacing: -0.01em;
+  }
+  
+  .portal-header p {
+    color: var(--text-dim);
+    font-size: 1.05rem;
+    max-width: 500px;
+    margin: 16px auto 0;
+  }
+
+  .portal-card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    width: 100%;
+    max-width: 720px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Progress Bar */
+  .progress-container {
+    margin-bottom: 40px;
+  }
+  
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  
+  .progress-track {
+    height: 4px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold-light));
+    width: 25%;
+    transition: width 0.4s ease-in-out;
+  }
+
+  /* Form Steps */
+  .form-step {
+    display: none;
+    animation: fadeIn 0.4s ease forwards;
+  }
+  
+  .form-step.active {
+    display: block;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .step-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-bottom: 24px;
+    color: var(--silver-light);
+  }
+
+  .field { margin-bottom: 24px; }
+  .field label { 
+    display:block; 
+    font-family:'JetBrains Mono', monospace; 
+    font-size: 0.68rem; 
+    letter-spacing: 0.12em; 
+    text-transform: uppercase; 
+    color: var(--text-faint); 
+    margin-bottom: 8px; 
+  }
+  
+  .field input[type="text"], 
+  .field input[type="email"], 
+  .field input[type="url"],
+  .field input[type="date"],
+  .field select,
+  .field textarea { 
+    width: 100%; 
+    background: rgba(255,255,255,0.02); 
+    border: 1px solid var(--line-silver); 
+    color: var(--text); 
+    font-family:'Inter', sans-serif; 
+    font-size: 1rem; 
+    padding: 12px 14px; 
+    transition: border-color .25s ease, background .25s ease;
+    border-radius: 2px;
+  }
+  
+  .field input:focus, .field select:focus, .field textarea:focus { 
+    border-color: var(--gold); 
+    outline: none; 
+    background: rgba(255,255,255,0.04);
+  }
+  
+  .field select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23c9a15a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px top 50%;
+    background-size: 10px auto;
+  }
+  
+  .field select option {
+    background: var(--bg-card);
+    color: var(--text);
+  }
+  
+  .field textarea { resize: vertical; min-height: 100px; }
+
+  .checkbox-group, .radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  
+  .check-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+  
+  .check-label input {
+    accent-color: var(--gold);
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  @media (max-width: 600px) {
+    .portal-card { padding: 24px; }
+    .form-actions { flex-direction: column-reverse; gap: 16px; }
+    .btn { width: 100%; }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="blueprint-grid"></div>
+
+<header>
+  <div class="wrap">
+    <div class="brand">ff<span>360</span>_labs</div>
+    <nav>
+      <a href="index.html#services">Services</a>
+      <a href="index.html#process">Process</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="index.html#work">Work</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<section class="portal-section">
+  <div class="portal-header">
+    <div class="kicker">Project Discovery</div>
+    <h1 class="metal-gold">Let's build something.</h1>
+    <p>Fill out the form below to give us an overview of your project, goals, and timeline. We'll be in touch shortly.</p>
+  </div>
+
+  <div class="portal-card">
+    
+    <div class="progress-container">
+      <div class="progress-header">
+        <span id="step-indicator">Step 1 of 4</span>
+        <span id="step-title-indicator">The Basics</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <div id="success-message" style="display: none; text-align: center; padding: 2rem; color: var(--gold);">
+      <h3>Project Request Received</h3>
+      <p>Thank you! We will review your details and be in touch shortly.</p>
+    </div>
+
+    <form id="discovery-form" action="https://script.google.com/macros/s/AKfycbzxVLRGWxBeqQHesl8Qaq-yMA6SP1A1YTFpn7fuFchqVwiH_iVQIp76gaC5PRv9xWTwCQ/exec" method="POST">
+      
+      <!-- Step 1: The Basics -->
+      <div class="form-step active" data-step="1" data-title="The Basics">
+        <div class="step-title">1. The Basics</div>
+        
+        <div class="field">
+          <label for="biz_name">Business/Organization Name</label>
+          <input type="text" id="biz_name" name="business_name" required placeholder="Acme Corp">
+        </div>
+        
+        <div class="field">
+          <label for="contact_name">Primary Contact Name</label>
+          <input type="text" id="contact_name" name="contact_name" required placeholder="Jane Doe">
+        </div>
+        
+        <div class="field">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" required placeholder="jane@example.com">
+        </div>
+        
+        <div class="field">
+          <label for="current_url">Current Website URL (if any)</label>
+          <input type="url" id="current_url" name="current_website" placeholder="https://www.example.com">
+        </div>
+      </div>
+
+      <!-- Step 2: Project Goals -->
+      <div class="form-step" data-step="2" data-title="Project Goals">
+        <div class="step-title">2. Project Goals</div>
+        
+        <div class="field">
+          <label for="purpose">Main purpose of the website</label>
+          <select id="purpose" name="project_purpose" required>
+            <option value="" disabled selected>Select a purpose...</option>
+            <option value="Showcase">Showcase / Portfolio</option>
+            <option value="E-commerce">E-commerce / Sell Products</option>
+            <option value="Leads">Lead Generation</option>
+            <option value="Booking">Booking / Scheduling</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        
+        <div class="field">
+          <label for="audience">Who is your target audience?</label>
+          <textarea id="audience" name="target_audience" required placeholder="Describe the people you are trying to reach..."></textarea>
+        </div>
+        
+        <div class="field">
+          <label for="visitor_action">Desired visitor action</label>
+          <input type="text" id="visitor_action" name="desired_action" required placeholder="e.g., call, buy a product, book a consultation">
+        </div>
+      </div>
+
+      <!-- Step 3: Content & Design -->
+      <div class="form-step" data-step="3" data-title="Content & Design">
+        <div class="step-title">3. Content & Design</div>
+        
+        <div class="field">
+          <label>Pages needed (Select all that apply)</label>
+          <div class="checkbox-group">
+            <label class="check-label"><input type="checkbox" name="pages_needed" value="Home"> Home</label>
+            <label class="check-label"><input type="checkbox" name="pages_needed" value="About"> About</label>
+            <label class="check-label"><input type="checkbox" name="pages_needed" value="Services"> Services</label>
+            <label class="check-label"><input type="checkbox" name="pages_needed" value="Store"> Store</label>
+            <label class="check-label"><input type="checkbox" name="pages_needed" value="Blog"> Blog</label>
+            <label class="check-label"><input type="checkbox" name="pages_needed" value="Contact"> Contact</label>
+            <label class="check-label"><input type="checkbox" name="pages_needed" value="Other"> Other</label>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Content Readiness</label>
+          <div class="radio-group">
+            <label class="check-label"><input type="radio" name="content_readiness" value="Have content" required> I have all text and images ready</label>
+            <label class="check-label"><input type="radio" name="content_readiness" value="Need writing help"> I need help writing/sourcing content</label>
+            <label class="check-label"><input type="radio" name="content_readiness" value="Mix of both"> A mix of both</label>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label for="design_style">Design Style Preferences</label>
+          <select id="design_style" name="design_style" required>
+            <option value="" disabled selected>Select a style...</option>
+            <option value="Clean/Minimal">Clean & Minimal</option>
+            <option value="Bold/Colorful">Bold & Colorful</option>
+            <option value="Luxury">Luxury & High-end</option>
+            <option value="Professional">Corporate / Professional</option>
+            <option value="Experimental">Experimental / Unique</option>
+          </select>
+        </div>
+        
+        <div class="field">
+          <label for="inspiration">Links to 1 or 2 websites you like</label>
+          <textarea id="inspiration" name="design_inspiration" placeholder="https://..."></textarea>
+        </div>
+      </div>
+
+      <!-- Step 4: Tech & Timeline -->
+      <div class="form-step" data-step="4" data-title="Tech & Timeline">
+        <div class="step-title">4. Tech & Timeline</div>
+        
+        <div class="field">
+          <label for="domain">Do you own a domain?</label>
+          <input type="text" id="domain" name="owns_domain" placeholder="Yes (example.com) / No">
+        </div>
+        
+        <div class="field">
+          <label for="launch_date">Ideal Launch Date</label>
+          <input type="date" id="launch_date" name="launch_date">
+        </div>
+        
+        <div class="field">
+          <label for="budget">Approximate Budget Range</label>
+          <select id="budget" name="budget" required>
+            <option value="" disabled selected>Select a range...</option>
+            <option value="$750-$1,500 Launch">$750–$1,500 (Launch)</option>
+            <option value="$1,500-$3,000 Growth">$1,500–$3,000 (Growth)</option>
+            <option value="Custom/Innovation">Custom / Innovation (Over $3k)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" id="prev-btn" style="display: none;">Previous Step</button>
+        <!-- Use ml-auto or flex spacer if no prev button -->
+        <div style="flex-grow:1"></div>
+        <button type="button" class="btn btn-gold" id="next-btn">Next Step</button>
+        <button type="submit" class="btn btn-gold" id="submit-btn" style="display: none;">Submit Project Request</button>
+      </div>
+
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="fbrand">© 2026 ff360_labs</div>
+    <div class="ftag">Always building something new.</div>
+  </div>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const steps = document.querySelectorAll('.form-step');
+    const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const progressFill = document.getElementById('progress-fill');
+    const stepIndicator = document.getElementById('step-indicator');
+    const stepTitleIndicator = document.getElementById('step-title-indicator');
+    
+    let currentStep = 0;
+    const totalSteps = steps.length;
+
+    function updateForm() {
+      // Hide all steps
+      steps.forEach(step => step.classList.remove('active'));
+      
+      // Show current step
+      steps[currentStep].classList.add('active');
+      
+      // Update progress
+      const stepNum = currentStep + 1;
+      const progressPercent = (stepNum / totalSteps) * 100;
+      progressFill.style.width = `${progressPercent}%`;
+      
+      // Update indicators
+      stepIndicator.textContent = `Step ${stepNum} of ${totalSteps}`;
+      stepTitleIndicator.textContent = steps[currentStep].getAttribute('data-title');
+      
+      // Update buttons
+      if (currentStep === 0) {
+        prevBtn.style.display = 'none';
+      } else {
+        prevBtn.style.display = 'inline-block';
+      }
+      
+      if (currentStep === totalSteps - 1) {
+        nextBtn.style.display = 'none';
+        submitBtn.style.display = 'inline-block';
+      } else {
+        nextBtn.style.display = 'inline-block';
+        submitBtn.style.display = 'none';
+      }
+    }
+
+    function validateCurrentStep() {
+      const currentStepEl = steps[currentStep];
+      const requiredInputs = currentStepEl.querySelectorAll('input[required], select[required], textarea[required]');
+      let isValid = true;
+      
+      requiredInputs.forEach(input => {
+        if (!input.value.trim()) {
+          isValid = false;
+          input.style.borderColor = 'red';
+        } else {
+          input.style.borderColor = '';
+        }
+      });
+      
+      const radioGroups = currentStepEl.querySelectorAll('input[type="radio"][required]');
+      if (radioGroups.length > 0) {
+        const name = radioGroups[0].name;
+        const checked = currentStepEl.querySelector(`input[name="${name}"]:checked`);
+        if (!checked) {
+          isValid = false;
+        }
+      }
+      
+      return isValid;
+    }
+
+    nextBtn.addEventListener('click', () => {
+      if (!validateCurrentStep()) {
+        return; // Alternatively, can alert here or show a custom error message
+      }
+      
+      if (currentStep < totalSteps - 1) {
+        currentStep++;
+        updateForm();
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentStep > 0) {
+        currentStep--;
+        updateForm();
+      }
+    });
+    
+    // Clear validation styling on input
+    const allInputs = document.querySelectorAll('input, select, textarea');
+    allInputs.forEach(input => {
+      input.addEventListener('input', () => {
+        if (input.hasAttribute('required')) {
+          input.style.borderColor = '';
+        }
+      });
+    });
+
+    document.getElementById("discovery-form").addEventListener("submit", function(e) {
+      e.preventDefault(); 
+      
+      const form = e.target;
+      const data = new FormData(form);
+      const action = form.action;
+      
+      const submitBtn = form.querySelector('button[type="submit"]');
+      submitBtn.innerText = "Sending...";
+      submitBtn.disabled = true;
+
+      fetch(action, {
+        method: 'POST',
+        body: data,
+        mode: 'no-cors'
+      })
+      .then(() => {
+        form.style.display = "none";
+        document.querySelector(".progress-container").style.display = "none";
+        document.getElementById("success-message").style.display = "block";
+      })
+      .catch(error => {
+        console.error('Error!', error.message);
+        submitBtn.innerText = "Error. Try Again.";
+        submitBtn.disabled = false;
+      });
+    });
+
+    // Initialize form
+    updateForm();
+  });
+</script>
+
+<script>
+  let t = 0;
+  function shimmer(){
+    t += 0.15;
+    const pos = (Math.sin(t/40) * 50 + 50).toFixed(1);
+    document.querySelectorAll('.metal-gold, .metal-silver').forEach(el=>{
+      el.style.backgroundPosition = pos + '% 50%';
+    });
+    requestAnimationFrame(shimmer);
+  }
+  shimmer();
+</script>
+
+</body>
+</html>

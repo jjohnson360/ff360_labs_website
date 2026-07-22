@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ff360_labs — Contact</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="blueprint-grid"></div>
+
+<header>
+  <div class="wrap">
+    <a href="services.html" class="brand">ff<span>360</span>_labs</a>
+    <nav>
+      <a href="services.html">Services</a>
+      <a href="process.html">Process</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="work.html">Work</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="contact" id="contact">
+    <div class="wrap" style="width: 100%;">
+      <div class="contact-grid">
+        
+        <div class="contact-info">
+          <div class="kicker">Get in Touch</div>
+          <h2 class="metal-gold shimmer-text" style="font-size: 2.2rem; margin-bottom: 40px;">Ready to build?</h2>
+          
+          <dl>
+            <dt>Location</dt>
+            <dd>Based in NY — working globally.</dd>
+
+            <dt>Email</dt>
+            <dd>hello@ff360labs.com</dd>
+          </dl>
+
+          <div class="socials">
+            <a href="#" target="_blank">Instagram</a>
+            <a href="#" target="_blank">GitHub</a>
+            <a href="#" target="_blank">Are.na</a>
+          </div>
+        </div>
+
+        <div>
+          <form id="contact-form" action="https://script.google.com/macros/s/AKfycbzxVLRGWxBeqQHesl8Qaq-yMA6SP1A1YTFpn7fuFchqVwiH_iVQIp76gaC5PRv9xWTwCQ/exec" method="POST">
+            <div class="field">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" required placeholder="Jane Doe">
+            </div>
+            <div class="field">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required placeholder="jane@example.com">
+            </div>
+            <div class="field">
+              <label for="details">Project Details</label>
+              <textarea id="details" name="details" required placeholder="Tell me about what you're building..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 10px;">Send Message</button>
+          </form>
+
+          <div id="success-message" style="display:none; text-align:center; padding: 40px 20px; background: rgba(201,161,90,0.05); border: 1px solid var(--gold-dark);">
+            <svg style="width:48px; height:48px; stroke:var(--gold); fill:none; margin-bottom: 20px;" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M22 4L12 14.01l-3-3"/></svg>
+            <h3 style="font-family:'Fraunces', serif; font-size: 1.5rem; margin-bottom: 10px;">Message Received</h3>
+            <p style="color: var(--text-dim); font-size: 0.9rem;">I'll review the details and get back to you within 48 hours.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fbrand">© 2026 ff360_labs</div>
+    <div class="ftag">Always building something new.</div>
+  </div>
+</footer>
+
+<script src="transition.js"></script>
+</body>
+</html>
