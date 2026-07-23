@@ -1,74 +1,130 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Icosahedron, MeshDistortMaterial, Float } from "@react-three/drei";
+import { useRef, Suspense, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useGLTF, Html, Preload, Clone } from "@react-three/drei";
 import * as THREE from "three";
 
-function AbstractShape({ reducedMotion }: { reducedMotion: boolean }) {
-  const meshRef = useRef<THREE.Mesh>(null);
+interface CoreModelProps {
+  position?: [number, number, number];
+  baseScale?: number;
+  isBackground?: boolean;
+  rotationSpeedOffset?: number;
+}
 
-  useFrame((state) => {
-    if (meshRef.current && !reducedMotion) {
-      meshRef.current.rotation.x = state.clock.elapsedTime * 0.1;
-      meshRef.current.rotation.y = state.clock.elapsedTime * 0.15;
+function CoreModel({ 
+  position = [0, 0, 0], 
+  baseScale = 1.5, 
+  isBackground = false,
+  rotationSpeedOffset = 1
+}: CoreModelProps) {
+  const group = useRef<THREE.Group>(null);
+  const [hovered, setHovered] = useState(false);
+  
+  // NOTE: This requires the /public/models/ff360_core.glb file to exist!
+  const { scene } = useGLTF("/models/ff360_core.glb");
+
+  const { pointer } = useThree();
+
+  useFrame((state, delta) => {
+    if (!group.current) return;
+
+    // Smoothly scale up on hover (only for the main foreground model)
+    const targetScale = (hovered && !isBackground) ? baseScale * 1.15 : baseScale;
+    const currentScale = group.current.scale.x;
+    const newScale = THREE.MathUtils.lerp(currentScale, targetScale, 0.1);
+    group.current.scale.setScalar(newScale);
+
+    // Rotate on Y axis, faster when hovered (foreground only)
+    const baseRotSpeed = 0.2 * rotationSpeedOffset;
+    const rotationSpeed = (hovered && !isBackground) ? 0.8 : baseRotSpeed;
+    group.current.rotation.y += delta * rotationSpeed;
+
+    if (!isBackground) {
+      // Tilt based on mouse position (normalized device coordinates: -1 to +1)
+      const targetRotationX = pointer.y * 0.5; // Up/down tilt
+      const targetRotationZ = -pointer.x * 0.5; // Left/right tilt
+
+      // Lerp towards target rotation for a heavy, tactile feel
+      group.current.rotation.x = THREE.MathUtils.lerp(group.current.rotation.x, targetRotationX, 0.05);
+      group.current.rotation.z = THREE.MathUtils.lerp(group.current.rotation.z, targetRotationZ, 0.05);
+    } else {
+      // Background models float gently
+      group.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 0.5 * rotationSpeedOffset) * 0.2;
     }
   });
 
   return (
-    <Float speed={reducedMotion ? 0 : 2} rotationIntensity={reducedMotion ? 0 : 0.5} floatIntensity={reducedMotion ? 0 : 1}>
-      <Icosahedron ref={meshRef} args={[2.5, 4]} position={[0, 0, 0]}>
-        <MeshDistortMaterial
-          color="#c9a15a"
-          envMapIntensity={1}
-          clearcoat={1}
-          clearcoatRoughness={0.1}
-          metalness={0.8}
-          roughness={0.2}
-          distort={reducedMotion ? 0 : 0.4}
-          speed={reducedMotion ? 0 : 2}
-          wireframe={true}
-        />
-      </Icosahedron>
-    </Float>
+    <group 
+      ref={group}
+      position={position}
+      onPointerOver={() => !isBackground && setHovered(true)}
+      onPointerOut={() => !isBackground && setHovered(false)}
+    >
+      <Clone object={scene} />
+    </group>
+  );
+}
+
+function Loader() {
+  return (
+    <Html center>
+      <div className="font-mono text-sm tracking-widest text-silver-light whitespace-nowrap">
+        INITIALIZING 3D ENGINE...
+      </div>
+    </Html>
   );
 }
 
 export default function Hero3D() {
-  const [mounted, setMounted] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(mediaQuery.matches);
-    
-    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
-    mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
-  }, []);
-
-  if (!mounted) {
-    // Static fallback while mounting
-    return (
-      <div className="absolute inset-0 flex items-center justify-center opacity-30">
-        <div className="w-64 h-64 rounded-full border border-gold-dark/50"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none" aria-hidden="true">
+    <div className="absolute inset-0 z-0 pointer-events-auto">
       <Canvas
-        camera={{ position: [0, 0, 8], fov: 45 }}
-        gl={{ alpha: true, antialias: true }}
-        dpr={typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1}
+        camera={{ position: [0, 0, 5], fov: 45 }}
+        gl={{ antialias: true, alpha: true }}
       >
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 10]} intensity={2} color="#f0d28a" />
-        <directionalLight position={[-10, -10, -10]} intensity={1} color="#eef0f1" />
-        <AbstractShape reducedMotion={reducedMotion} />
+        {/* Environment & Lighting */}
+        <ambientLight intensity={0.2} color="#ffffff" />
+        
+        {/* Primary Gold Spotlight */}
+        <spotLight 
+          position={[5, 5, 5]} 
+          angle={0.15} 
+          penumbra={1} 
+          intensity={50} 
+          color="#c9a15a" 
+          castShadow 
+        />
+        
+        {/* Fill Light for depth */}
+        <spotLight 
+          position={[-5, -5, -5]} 
+          angle={0.2} 
+          penumbra={1} 
+          intensity={20} 
+          color="#17171a" 
+        />
+        
+        {/* Subtle Background Illumination */}
+        <pointLight position={[-8, 0, -6]} intensity={0.5} color="#c9a15a" distance={15} />
+        <pointLight position={[8, 0, -8]} intensity={0.3} color="#ffffff" distance={15} />
+        
+        <Suspense fallback={<Loader />}>
+          {/* Main Foreground Model */}
+          <CoreModel position={[0, 0, 0]} baseScale={1.5} />
+          
+          {/* Background Models for depth */}
+          <CoreModel position={[-6.5, 1.5, -4]} baseScale={0.6} isBackground={true} rotationSpeedOffset={-0.8} />
+          <CoreModel position={[7.5, -1.8, -6]} baseScale={0.8} isBackground={true} rotationSpeedOffset={0.6} />
+          <CoreModel position={[-8.0, -2.5, -8]} baseScale={1.2} isBackground={true} rotationSpeedOffset={-0.4} />
+          <CoreModel position={[8.5, 2.0, -10]} baseScale={1.5} isBackground={true} rotationSpeedOffset={0.5} />
+          
+          <Preload all />
+        </Suspense>
       </Canvas>
     </div>
   );
 }
+
+// Preload the model so it starts fetching immediately
+useGLTF.preload("/models/ff360_core.glb");

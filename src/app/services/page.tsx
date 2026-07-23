@@ -1,6 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
+
+const TechStackPhysics = dynamic(() => import("@/components/TechStackPhysics"), {
+  ssr: false,
+});
 
 const services = [
   {
@@ -91,6 +96,23 @@ export default function Services() {
             </div>
           </motion.div>
         ))}
+      </div>
+
+      <div className="mt-32 mb-10 relative">
+        <div className="flex flex-col items-center text-center mb-10">
+          <div className="font-mono text-xs tracking-[0.24em] uppercase text-silver mb-3">Behind the Scenes</div>
+          <h2 className="font-display font-semibold text-3xl md:text-4xl text-text">
+            Our Tech Stack
+          </h2>
+          <p className="text-text-dim text-sm mt-3 max-w-md mx-auto">
+            Grab, toss, and stack the tools we use to build fast, interactive, and scalable digital products.
+          </p>
+        </div>
+        
+        {/* Physics Bucket */}
+        <div className="relative w-full h-[50vh] min-h-[450px] border border-gold/20 rounded-sm overflow-hidden bg-[#0d0c0f]/80 shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] pointer-events-auto">
+           <TechStackPhysics />
+        </div>
       </div>
     </div>
   );

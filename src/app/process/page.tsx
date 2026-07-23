@@ -1,6 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
+
+const ProcessPhysics = dynamic(() => import("@/components/ProcessPhysics"), {
+  ssr: false,
+});
 
 const phases = [
   {
@@ -31,13 +36,19 @@ const phases = [
 
 export default function Process() {
   return (
-    <div className="max-w-[1180px] mx-auto px-8 py-24">
-      <div className="mb-20">
-        <div className="font-mono text-xs tracking-[0.24em] uppercase text-silver mb-5">How A Project Runs</div>
-        <h1 className="font-display font-semibold text-4xl md:text-5xl max-w-2xl text-text">
-          <span className="metal-silver shimmer-text">Four phases,</span> from idea to live product.
-        </h1>
+    <div className="relative min-h-screen">
+      {/* Interactive Physics Background */}
+      <div className="fixed inset-0 z-0 pointer-events-auto opacity-40">
+        <ProcessPhysics />
       </div>
+
+      <div className="max-w-[1180px] mx-auto px-8 py-24 relative z-10 pointer-events-none">
+        <div className="mb-20">
+          <div className="font-mono text-xs tracking-[0.24em] uppercase text-silver mb-5">How A Project Runs</div>
+          <h1 className="font-display font-semibold text-4xl md:text-5xl max-w-2xl text-text">
+            <span className="metal-silver shimmer-text">Four phases,</span> from idea to live product.
+          </h1>
+        </div>
 
       <div className="relative mt-24">
         {/* Animated horizontal line behind the timeline (Desktop) */}
@@ -101,6 +112,7 @@ export default function Process() {
           ))}
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import HeroCircuits from "@/components/HeroCircuits";
+import CustomCursor from "@/components/CustomCursor";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -34,13 +34,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased min-h-screen flex flex-col relative overflow-x-hidden">
+        <CustomCursor />
         {/* Background Textures */}
         <div className="blueprint-grid z-0"></div>
-        
-        {/* Global Circuit Animation Background */}
-        <div className="fixed inset-0 z-0 pointer-events-none">
-          <HeroCircuits />
-        </div>
         
         <Header />
         

@@ -128,3 +128,9 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+@media (pointer: fine) {
+  * {
+    cursor: none !important;
+  }
+}
