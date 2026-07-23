@@ -69,7 +69,7 @@ export default function PhysicsFooter() {
     FOOTER_ITEMS.forEach((text) => {
       const pillWidth = text.length * 10 + 40; // Approximate width based on chars
       
-      const bodyOptions: Matter.IBodyDefinition = {
+      const bodyOptions: Matter.IChamferableBodyDefinition = {
         label: text,
         restitution: 0.3, // Less bouncy than the tech stack
         friction: 0.5,

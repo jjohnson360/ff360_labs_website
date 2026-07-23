@@ -67,7 +67,7 @@ export default function TechStackPhysics() {
       // Approximate width based on character count (roughly 12px per char + 60px padding)
       const pillWidth = tech.length * 12 + 60;
       
-      const bodyOptions: Matter.IBodyDefinition = {
+      const bodyOptions: Matter.IChamferableBodyDefinition = {
         label: tech,
         restitution: 0.5, // Bouncy
         friction: 0.1,

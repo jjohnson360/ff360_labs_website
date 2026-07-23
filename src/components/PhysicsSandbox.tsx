@@ -45,12 +45,12 @@ export default function PhysicsSandbox() {
       isStatic: true,
       render: { fillStyle: "transparent" },
     };
-    
+
     // Bottom, Left, Right
     const ground = Matter.Bodies.rectangle(width / 2, height + 25, width + 100, 50, wallOptions);
     const leftWall = Matter.Bodies.rectangle(-25, height / 2, 50, height + 100, wallOptions);
     const rightWall = Matter.Bodies.rectangle(width + 25, height / 2, 50, height + 100, wallOptions);
-    
+
     Matter.World.add(world, [ground, leftWall, rightWall]);
 
     // 5. Create Logo Bodies
@@ -61,7 +61,7 @@ export default function PhysicsSandbox() {
     const initialScale = isMobile ? 0.6 : 1;
 
     const startX = width / 2 - (characters.length * 25 * initialScale);
-    
+
     characters.forEach((char, index) => {
       // Vary shape based on character vaguely
       const isCircle = ['0', '6', '3', 'a', 's'].includes(char);
@@ -73,7 +73,7 @@ export default function PhysicsSandbox() {
       if (isWide) { w = 80; h = 20; }
       if (isCircle) { w = 25; } // radius
 
-      const bodyOptions: Matter.IBodyDefinition = {
+      const bodyOptions: Matter.IChamferableBodyDefinition = {
         label: char,
         restitution: 0.6, // Bouncy
         friction: 0.1,
@@ -94,11 +94,11 @@ export default function PhysicsSandbox() {
       } else {
         body = Matter.Bodies.rectangle(x, y, w, h, bodyOptions);
       }
-      
+
       if (initialScale !== 1) {
         Matter.Body.scale(body, initialScale, initialScale);
       }
-      
+
       // Random spin
       Matter.Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.2);
       bodies.push(body);
@@ -139,7 +139,7 @@ export default function PhysicsSandbox() {
       },
     });
     Matter.World.add(world, mouseConstraint);
-    
+
     // Fix scroll capture issue on canvas
     render.mouse = mouse;
 
@@ -148,7 +148,7 @@ export default function PhysicsSandbox() {
       if (!sceneRef.current || !renderRef.current) return;
       const newWidth = sceneRef.current.clientWidth;
       const newHeight = sceneRef.current.clientHeight;
-      
+
       renderRef.current.canvas.width = newWidth;
       renderRef.current.canvas.height = newHeight;
       renderRef.current.options.width = newWidth;
@@ -162,10 +162,10 @@ export default function PhysicsSandbox() {
       // Update boundaries
       Matter.Body.setPosition(ground, { x: newWidth / 2, y: newHeight + 25 });
       Matter.Body.setVertices(ground, Matter.Bodies.rectangle(newWidth / 2, newHeight + 25, newWidth + 100, 50).vertices);
-      
+
       Matter.Body.setPosition(rightWall, { x: newWidth + 25, y: newHeight / 2 });
       Matter.Body.setVertices(rightWall, Matter.Bodies.rectangle(newWidth + 25, newHeight / 2, 50, newHeight + 100).vertices);
-      
+
       Matter.Body.setPosition(leftWall, { x: -25, y: newHeight / 2 });
       Matter.Body.setVertices(leftWall, Matter.Bodies.rectangle(-25, newHeight / 2, 50, newHeight + 100).vertices);
     };
@@ -191,8 +191,8 @@ export default function PhysicsSandbox() {
   }, []);
 
   return (
-    <div 
-      ref={sceneRef} 
+    <div
+      ref={sceneRef}
       className="w-full h-full absolute inset-0 z-10 cursor-grab active:cursor-grabbing"
     />
   );

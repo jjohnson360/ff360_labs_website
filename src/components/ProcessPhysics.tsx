@@ -73,7 +73,7 @@ export default function ProcessPhysics() {
       const x = (width * 0.2) + (i * (width * 0.2)) + (Math.random() * 50 - 25);
       const y = (height / 2) + (Math.random() * 200 - 100);
 
-      const bodyOptions: Matter.IBodyDefinition = {
+      const bodyOptions: Matter.IChamferableBodyDefinition = {
         label: text,
         restitution: 0.8, // Bouncy
         frictionAir: 0.05, // Slows down movement smoothly in zero-G
@@ -176,8 +176,8 @@ export default function ProcessPhysics() {
     Matter.World.add(world, mouseConstraint);
     
     // Allows scrolling to pass through the canvas when not actively dragging a body
-    mouseConstraint.mouse.element.removeEventListener("mousewheel", mouseConstraint.mouse.mousewheel);
-    mouseConstraint.mouse.element.removeEventListener("DOMMouseScroll", mouseConstraint.mouse.mousewheel);
+    mouseConstraint.mouse.element.removeEventListener("mousewheel", (mouseConstraint.mouse as any).mousewheel);
+    mouseConstraint.mouse.element.removeEventListener("DOMMouseScroll", (mouseConstraint.mouse as any).mousewheel);
 
     render.mouse = mouse;
 
