@@ -33,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable}`}>
-      <body className="antialiased min-h-screen flex flex-col relative overflow-x-hidden">
+      <body className="antialiased min-h-screen flex flex-col relative overflow-x-hidden" suppressHydrationWarning>
         <CustomCursor />
         {/* Background Textures */}
         <div className="blueprint-grid z-0"></div>

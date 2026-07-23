@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, Suspense, useState } from "react";
+import { useRef, Suspense, useState, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, Html, Preload, Clone } from "@react-three/drei";
 import * as THREE from "three";
@@ -24,7 +24,7 @@ function CoreModel({
   // NOTE: This requires the /public/models/ff360_core.glb file to exist!
   const { scene } = useGLTF("/models/ff360_core.glb");
 
-  const { pointer } = useThree();
+  const { pointer, size } = useThree();
 
   useFrame((state, delta) => {
     if (!group.current) return;
@@ -42,8 +42,11 @@ function CoreModel({
 
     if (!isBackground) {
       // Tilt based on mouse position (normalized device coordinates: -1 to +1)
-      const targetRotationX = pointer.y * 0.5; // Up/down tilt
-      const targetRotationZ = -pointer.x * 0.5; // Left/right tilt
+      const isTouch = typeof window !== 'undefined' && window.matchMedia("(pointer: coarse)").matches;
+      const rotationMultiplier = isTouch || size.width < 768 ? 0.2 : 1.0;
+      
+      const targetRotationX = pointer.y * 0.5 * rotationMultiplier; // Up/down tilt
+      const targetRotationZ = -pointer.x * 0.5 * rotationMultiplier; // Left/right tilt
 
       // Lerp towards target rotation for a heavy, tactile feel
       group.current.rotation.x = THREE.MathUtils.lerp(group.current.rotation.x, targetRotationX, 0.05);
@@ -76,6 +79,20 @@ function Loader() {
   );
 }
 
+function ResponsiveCamera() {
+  const { camera, size } = useThree();
+
+  useEffect(() => {
+    const isMobile = size.width < 768;
+    if (camera instanceof THREE.PerspectiveCamera) {
+      camera.position.z = isMobile ? 10 : 5;
+      camera.updateProjectionMatrix();
+    }
+  }, [camera, size.width]);
+
+  return null;
+}
+
 export default function Hero3D() {
   return (
     <div className="absolute inset-0 z-0 pointer-events-auto">
@@ -83,6 +100,7 @@ export default function Hero3D() {
         camera={{ position: [0, 0, 5], fov: 45 }}
         gl={{ antialias: true, alpha: true }}
       >
+        <ResponsiveCamera />
         {/* Environment & Lighting */}
         <ambientLight intensity={0.2} color="#ffffff" />
         

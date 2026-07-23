@@ -57,7 +57,10 @@ export default function PhysicsSandbox() {
     const characters = ['f', 'f', '3', '6', '0', '_', 'l', 'a', 'b', 's'];
     const bodies: Matter.Body[] = [];
 
-    const startX = width / 2 - (characters.length * 25);
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const initialScale = isMobile ? 0.6 : 1;
+
+    const startX = width / 2 - (characters.length * 25 * initialScale);
     
     characters.forEach((char, index) => {
       // Vary shape based on character vaguely
@@ -82,7 +85,7 @@ export default function PhysicsSandbox() {
         },
       };
 
-      const x = startX + index * 50;
+      const x = startX + index * (50 * initialScale);
       const y = Math.random() * -500 - 100; // Drop from above
 
       let body;
@@ -90,6 +93,10 @@ export default function PhysicsSandbox() {
         body = Matter.Bodies.circle(x, y, w, bodyOptions);
       } else {
         body = Matter.Bodies.rectangle(x, y, w, h, bodyOptions);
+      }
+      
+      if (initialScale !== 1) {
+        Matter.Body.scale(body, initialScale, initialScale);
       }
       
       // Random spin
@@ -102,7 +109,8 @@ export default function PhysicsSandbox() {
     // 6. Custom Render for Text
     Matter.Events.on(render, 'afterRender', () => {
       const ctx = render.context;
-      ctx.font = "bold 32px 'JetBrains Mono', monospace";
+      const fontSize = Math.floor(32 * initialScale);
+      ctx.font = `bold ${fontSize}px 'JetBrains Mono', monospace`;
       ctx.fillStyle = "#c9a15a"; // Gold text
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -114,7 +122,7 @@ export default function PhysicsSandbox() {
           ctx.rotate(body.angle);
           // Small offset adjustments for specific characters if needed
           let offsetY = 0;
-          if (body.label === '_') offsetY = -10;
+          if (body.label === '_') offsetY = -10 * initialScale;
           ctx.fillText(body.label, 0, offsetY);
           ctx.restore();
         }
@@ -145,6 +153,11 @@ export default function PhysicsSandbox() {
       renderRef.current.canvas.height = newHeight;
       renderRef.current.options.width = newWidth;
       renderRef.current.options.height = newHeight;
+
+      if (renderRef.current.bounds) {
+        renderRef.current.bounds.max.x = newWidth;
+        renderRef.current.bounds.max.y = newHeight;
+      }
 
       // Update boundaries
       Matter.Body.setPosition(ground, { x: newWidth / 2, y: newHeight + 25 });
