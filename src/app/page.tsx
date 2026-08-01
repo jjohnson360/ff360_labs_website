@@ -20,7 +20,7 @@ export default function Home() {
         <p className="mt-7 max-w-[560px] text-text-dim text-lg">
           ff360_labs designs and builds websites, interactive experiences, 3D work,
           and creative software — for small businesses, artists, and anyone with an
-          idea that doesn't fit a template.
+          idea that doesn&apos;t fit a template.
         </p>
 
         <div className="mt-11 flex flex-wrap gap-4 justify-center">

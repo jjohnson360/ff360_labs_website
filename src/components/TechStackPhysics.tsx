@@ -63,7 +63,7 @@ export default function TechStackPhysics() {
     const bodies: Matter.Body[] = [];
     const pillHeight = 50;
 
-    TECH_STACK.forEach((tech, index) => {
+    TECH_STACK.forEach((tech) => {
       // Approximate width based on character count (roughly 12px per char + 60px padding)
       const pillWidth = tech.length * 12 + 60;
       

@@ -85,6 +85,7 @@ function ResponsiveCamera() {
   useEffect(() => {
     const isMobile = size.width < 768;
     if (camera instanceof THREE.PerspectiveCamera) {
+      // eslint-disable-next-line react-hooks/immutability
       camera.position.z = isMobile ? 10 : 5;
       camera.updateProjectionMatrix();
     }
