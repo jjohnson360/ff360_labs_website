@@ -1,54 +1,57 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, useSpring } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { 
-  Hexagon, 
-  Code2, 
-  Workflow, 
-  CircleDollarSign, 
-  FolderGit2, 
+import {
+  Hexagon,
+  Code2,
+  Workflow,
+  CircleDollarSign,
+  FolderGit2,
   Mail,
-  MousePointer2
+  MousePointer2,
 } from "lucide-react";
 
 export default function CustomCursor() {
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(false);
-  
-  // Track mouse coordinates
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  // useMotionValue: updates bypass React's render cycle entirely
+  const cursorX = useMotionValue(-100);
+  const cursorY = useMotionValue(-100);
+
+  // Tighter spring config for near-zero perceived lag
+  const springConfig = { damping: 25, stiffness: 400, mass: 0.1 };
+  const cursorXSpring = useSpring(cursorX, springConfig);
+  const cursorYSpring = useSpring(cursorY, springConfig);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-      if (!isVisible) setIsVisible(true);
+    // Unmount entirely on touch/coarse-pointer devices
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      return;
+    }
+
+    setIsVisible(true);
+
+    const moveCursor = (e: MouseEvent) => {
+      cursorX.set(e.clientX);
+      cursorY.set(e.clientY);
     };
 
     const handleMouseLeave = () => setIsVisible(false);
     const handleMouseEnter = () => setIsVisible(true);
 
-    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", moveCursor);
     document.addEventListener("mouseleave", handleMouseLeave);
     document.addEventListener("mouseenter", handleMouseEnter);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mousemove", moveCursor);
       document.removeEventListener("mouseleave", handleMouseLeave);
       document.removeEventListener("mouseenter", handleMouseEnter);
     };
-  }, [isVisible]);
-
-  // Use springs for smooth trailing effect
-  const springConfig = { damping: 25, stiffness: 200, mass: 0.5 };
-  const cursorX = useSpring(0, springConfig);
-  const cursorY = useSpring(0, springConfig);
-
-  useEffect(() => {
-    cursorX.set(mousePosition.x);
-    cursorY.set(mousePosition.y);
-  }, [mousePosition, cursorX, cursorY]);
+  }, [cursorX, cursorY]);
 
   // Determine icon based on route
   const getIcon = () => {
@@ -70,24 +73,16 @@ export default function CustomCursor() {
     }
   };
 
-  // Only render on devices with fine pointer (mouse)
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsTouchDevice(window.matchMedia("(pointer: coarse)").matches);
-  }, []);
-
-  if (isTouchDevice) return null;
+  if (!isVisible) return null;
 
   return (
     <motion.div
-      className="fixed top-0 left-0 z-[9999] pointer-events-none hidden md:flex items-center justify-center"
+      className="fixed top-0 left-0 z-[9999] pointer-events-none flex items-center justify-center"
       style={{
-        x: cursorX,
-        y: cursorY,
+        x: cursorXSpring,
+        y: cursorYSpring,
         translateX: "-50%",
         translateY: "-50%",
-        opacity: isVisible ? 1 : 0,
       }}
     >
       <div className="relative flex items-center justify-center">
