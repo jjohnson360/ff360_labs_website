@@ -32,6 +32,8 @@ export default function CustomCursor() {
       return;
     }
 
+    // Mount-time visibility flip for a fine-pointer device; not a state sync loop.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsVisible(true);
 
     const moveCursor = (e: MouseEvent) => {
