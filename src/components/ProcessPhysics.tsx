@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Matter from "matter-js";
+import { getResponsiveScale, isFinePointerDevice } from "@/lib/physicsResponsive";
 
 const PHASES = [
   "01 Discover",
@@ -64,9 +65,13 @@ export default function ProcessPhysics() {
     Matter.World.add(world, [ground, ceiling, leftWall, rightWall]);
 
     // 5. Create Nodes and Springs
+    // Scale node size down on narrow/mobile viewports — at full size, four
+    // 120px-diameter nodes with 250px spring lengths barely fit a phone
+    // screen and end up crowded on top of each other.
+    const scale = getResponsiveScale(width);
     const bodies: Matter.Body[] = [];
     const constraints: Matter.Constraint[] = [];
-    const nodeRadius = 60;
+    const nodeRadius = 60 * scale;
 
     PHASES.forEach((text, i) => {
       // Spread them out randomly but generally left to right
@@ -94,7 +99,7 @@ export default function ProcessPhysics() {
           bodyB: body,
           stiffness: 0.02, // Very elastic spring
           damping: 0.05,
-          length: 250, // Rest length of the spring
+          length: 250 * scale, // Rest length of the spring
           render: { visible: false } // We will custom render the line
         });
         constraints.push(constraint);
@@ -144,21 +149,21 @@ export default function ProcessPhysics() {
         ctx.stroke();
 
         // Draw Text
-        ctx.font = "bold 14px 'Inter', sans-serif";
-        ctx.fillStyle = "#e0e0e0"; 
+        ctx.font = `bold ${Math.round(14 * scale)}px 'Inter', sans-serif`;
+        ctx.fillStyle = "#e0e0e0";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        
+
         // Split text (e.g. "01 Discover" -> "01" on top, "Discover" below)
         const parts = body.label.split(" ");
         if (parts.length === 2) {
             ctx.fillStyle = "#c9a15a"; // Gold for number
-            ctx.font = "bold 16px 'JetBrains Mono', monospace";
-            ctx.fillText(parts[0], 0, -10);
-            
+            ctx.font = `bold ${Math.round(16 * scale)}px 'JetBrains Mono', monospace`;
+            ctx.fillText(parts[0], 0, -10 * scale);
+
             ctx.fillStyle = "#e0e0e0"; // Silver for text
-            ctx.font = "bold 14px 'Inter', sans-serif";
-            ctx.fillText(parts[1], 0, 12);
+            ctx.font = `bold ${Math.round(14 * scale)}px 'Inter', sans-serif`;
+            ctx.fillText(parts[1], 0, 12 * scale);
         } else {
             ctx.fillText(body.label, 0, 0);
         }
@@ -167,19 +172,29 @@ export default function ProcessPhysics() {
       }
     });
 
-    // 7. Mouse Interaction
-    const mouse = Matter.Mouse.create(render.canvas);
-    const mouseConstraint = Matter.MouseConstraint.create(engine, {
-      mouse: mouse,
-      constraint: { stiffness: 0.1, render: { visible: false } },
-    });
-    Matter.World.add(world, mouseConstraint);
-    
-    // Allows scrolling to pass through the canvas when not actively dragging a body
-    mouseConstraint.mouse.element.removeEventListener("mousewheel", (mouseConstraint.mouse as any).mousewheel);
-    mouseConstraint.mouse.element.removeEventListener("DOMMouseScroll", (mouseConstraint.mouse as any).mousewheel);
+    // 7. Mouse Interaction — only attach on devices with an actual mouse.
+    // This canvas is a `fixed inset-0` layer behind the *entire* Process
+    // page, and Matter's touch listeners call preventDefault() on
+    // touchmove to support drag-and-throw — on a touch device that was
+    // swallowing every scroll gesture on the page. Desktop keeps the toy;
+    // mobile just gets the ambient floating animation.
+    if (isFinePointerDevice()) {
+      const mouse = Matter.Mouse.create(render.canvas);
+      const mouseConstraint = Matter.MouseConstraint.create(engine, {
+        mouse: mouse,
+        constraint: { stiffness: 0.1, render: { visible: false } },
+      });
+      Matter.World.add(world, mouseConstraint);
 
-    render.mouse = mouse;
+      // Allows scrolling to pass through the canvas when not actively dragging a body
+      // @types/matter-js doesn't expose `mousewheel` on Matter.Mouse, though it exists at runtime.
+      type MouseWithWheel = Matter.Mouse & { mousewheel: EventListener };
+      const wheelHandler = (mouseConstraint.mouse as MouseWithWheel).mousewheel;
+      mouseConstraint.mouse.element.removeEventListener("mousewheel", wheelHandler);
+      mouseConstraint.mouse.element.removeEventListener("DOMMouseScroll", wheelHandler);
+
+      render.mouse = mouse;
+    }
 
     // 8. Handle Resize
     const handleResize = () => {
