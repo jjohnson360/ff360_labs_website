@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Matter from "matter-js";
+import { getResponsiveScale, isFinePointerDevice } from "@/lib/physicsResponsive";
 
 const TECH_STACK = [
   "React", "Next.js", "TypeScript", "Tailwind CSS", 
@@ -40,11 +41,9 @@ export default function TechStackPhysics() {
     });
     renderRef.current = render;
 
-    // 3. Setup Runner
+    // 3. Setup Runner (started lazily once the scene scrolls into view — see step 9)
     const runner = Matter.Runner.create();
     runnerRef.current = runner;
-    Matter.Runner.run(runner, engine);
-    Matter.Render.run(render);
 
     // 4. Create Boundaries
     const wallOptions = {
@@ -60,13 +59,16 @@ export default function TechStackPhysics() {
     Matter.World.add(world, [ground, leftWall, rightWall]);
 
     // 5. Create Tech Pills
+    // Scale pill size (and later, font) down on narrow/mobile containers so
+    // pills sized for a ~900px desktop layout don't overcrowd a phone screen.
+    const scale = getResponsiveScale(width);
     const bodies: Matter.Body[] = [];
-    const pillHeight = 50;
+    const pillHeight = 50 * scale;
 
     TECH_STACK.forEach((tech) => {
       // Approximate width based on character count (roughly 12px per char + 60px padding)
-      const pillWidth = tech.length * 12 + 60;
-      
+      const pillWidth = (tech.length * 12 + 60) * scale;
+
       const bodyOptions: Matter.IChamferableBodyDefinition = {
         label: tech,
         restitution: 0.5, // Bouncy
@@ -75,7 +77,7 @@ export default function TechStackPhysics() {
         chamfer: { radius: pillHeight / 2 }, // Pill shape rounding
         render: {
           fillStyle: "transparent", // Handled in custom render
-          strokeStyle: "transparent", 
+          strokeStyle: "transparent",
           lineWidth: 0,
         },
       };
@@ -85,14 +87,14 @@ export default function TechStackPhysics() {
       const y = Math.random() * -800 - 100; // Drop from above at different times
 
       const body = Matter.Bodies.rectangle(x, y, pillWidth, pillHeight, bodyOptions);
-      
+
       // Random spin
       Matter.Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.1);
-      
+
       // Store dimensions for custom rendering
       body.plugin.width = pillWidth;
       body.plugin.height = pillHeight;
-      
+
       bodies.push(body);
     });
 
@@ -125,7 +127,7 @@ export default function TechStackPhysics() {
         ctx.stroke();
 
         // Draw Text
-        ctx.font = "bold 16px 'Inter', sans-serif";
+        ctx.font = `bold ${Math.round(16 * scale)}px 'Inter', sans-serif`;
         ctx.fillStyle = "#e0e0e0"; // Silver light for text
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -135,18 +137,22 @@ export default function TechStackPhysics() {
       }
     });
 
-    // 7. Mouse Interaction
-    const mouse = Matter.Mouse.create(render.canvas);
-    const mouseConstraint = Matter.MouseConstraint.create(engine, {
-      mouse: mouse,
-      constraint: {
-        stiffness: 0.2,
-        render: { visible: false },
-      },
-    });
-    Matter.World.add(world, mouseConstraint);
-    
-    render.mouse = mouse;
+    // 7. Mouse Interaction — only attach on devices with an actual mouse.
+    // Matter's touch listeners call preventDefault() on touchmove, which
+    // would otherwise block native scrolling on mobile/touch devices.
+    if (isFinePointerDevice()) {
+      const mouse = Matter.Mouse.create(render.canvas);
+      const mouseConstraint = Matter.MouseConstraint.create(engine, {
+        mouse: mouse,
+        constraint: {
+          stiffness: 0.2,
+          render: { visible: false },
+        },
+      });
+      Matter.World.add(world, mouseConstraint);
+
+      render.mouse = mouse;
+    }
 
     // 8. Handle Resize
     const handleResize = () => {
@@ -171,9 +177,31 @@ export default function TechStackPhysics() {
 
     window.addEventListener("resize", handleResize);
 
-    // 9. Cleanup
+    // 9. Only run the simulation while the scene is actually on screen —
+    // this is well below the fold on the services page, so there's no
+    // reason to keep an animation loop ticking before the user scrolls to it.
+    let isRunning = false;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const intersecting = entries[0].isIntersecting;
+        if (intersecting && !isRunning) {
+          Matter.Runner.run(runner, engine);
+          Matter.Render.run(render);
+          isRunning = true;
+        } else if (!intersecting && isRunning) {
+          Matter.Runner.stop(runner);
+          Matter.Render.stop(render);
+          isRunning = false;
+        }
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(sceneRef.current);
+
+    // 10. Cleanup
     return () => {
       window.removeEventListener("resize", handleResize);
+      observer.disconnect();
       if (renderRef.current) {
         Matter.Render.stop(renderRef.current);
         if (renderRef.current.canvas) {

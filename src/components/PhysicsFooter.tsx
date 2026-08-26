@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import Matter from "matter-js";
 import { usePathname } from "next/navigation";
+import { getResponsiveScale, isFinePointerDevice } from "@/lib/physicsResponsive";
 
 const FOOTER_ITEMS = [
   "© 2026 ff360_labs",
@@ -43,11 +44,9 @@ export default function PhysicsFooter() {
     });
     renderRef.current = render;
 
-    // 3. Setup Runner
+    // 3. Setup Runner (started lazily once the footer scrolls into view — see step 9)
     const runner = Matter.Runner.create();
     runnerRef.current = runner;
-    Matter.Runner.run(runner, engine);
-    Matter.Render.run(render);
 
     // 4. Create Boundaries
     const wallOptions = {
@@ -63,12 +62,15 @@ export default function PhysicsFooter() {
     Matter.World.add(world, [ground, leftWall, rightWall]);
 
     // 5. Create Footer Bodies (But don't add them yet!)
+    // Scale down on narrow/mobile containers so blocks sized for a ~900px
+    // desktop footer don't overcrowd a phone-width bar.
+    const scale = getResponsiveScale(width);
     const bodies: Matter.Body[] = [];
-    const pillHeight = 40;
+    const pillHeight = 40 * scale;
 
     FOOTER_ITEMS.forEach((text) => {
-      const pillWidth = text.length * 10 + 40; // Approximate width based on chars
-      
+      const pillWidth = (text.length * 10 + 40) * scale; // Approximate width based on chars
+
       const bodyOptions: Matter.IChamferableBodyDefinition = {
         label: text,
         restitution: 0.3, // Less bouncy than the tech stack
@@ -115,7 +117,7 @@ export default function PhysicsFooter() {
         ctx.stroke();
 
         // Draw Text
-        ctx.font = "12px 'JetBrains Mono', monospace";
+        ctx.font = `${Math.round(12 * scale)}px 'JetBrains Mono', monospace`;
         ctx.fillStyle = "#a1a1aa"; // text-silver
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -125,14 +127,18 @@ export default function PhysicsFooter() {
       }
     });
 
-    // 7. Mouse Interaction
-    const mouse = Matter.Mouse.create(render.canvas);
-    const mouseConstraint = Matter.MouseConstraint.create(engine, {
-      mouse: mouse,
-      constraint: { stiffness: 0.2, render: { visible: false } },
-    });
-    Matter.World.add(world, mouseConstraint);
-    render.mouse = mouse;
+    // 7. Mouse Interaction — only attach on devices with an actual mouse.
+    // Matter's touch listeners call preventDefault() on touchmove, which
+    // would otherwise block native scrolling on mobile/touch devices.
+    if (isFinePointerDevice()) {
+      const mouse = Matter.Mouse.create(render.canvas);
+      const mouseConstraint = Matter.MouseConstraint.create(engine, {
+        mouse: mouse,
+        constraint: { stiffness: 0.2, render: { visible: false } },
+      });
+      Matter.World.add(world, mouseConstraint);
+      render.mouse = mouse;
+    }
 
     // 8. Handle Resize
     const handleResize = () => {
@@ -155,11 +161,27 @@ export default function PhysicsFooter() {
 
     window.addEventListener("resize", handleResize);
 
-    // 9. Intersection Observer to drop bodies when scrolled into view
+    // 9. Intersection Observer to drop bodies and (de)animate the scene
+    // when it scrolls in/out of view. The footer mounts on every page, so
+    // without this its Runner/Render loop would tick forever in the
+    // background even when nobody has scrolled anywhere near it.
     let dropped = false;
+    let isRunning = false;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !dropped) {
+        const intersecting = entries[0].isIntersecting;
+
+        if (intersecting && !isRunning) {
+          Matter.Runner.run(runner, engine);
+          Matter.Render.run(render);
+          isRunning = true;
+        } else if (!intersecting && isRunning) {
+          Matter.Runner.stop(runner);
+          Matter.Render.stop(render);
+          isRunning = false;
+        }
+
+        if (intersecting && !dropped) {
           Matter.World.add(world, bodies);
           dropped = true;
         }
