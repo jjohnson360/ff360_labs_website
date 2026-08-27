@@ -2,7 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import Matter from "matter-js";
-import { getResponsiveScale, isFinePointerDevice } from "@/lib/physicsResponsive";
+import {
+  cappedPixelRatio,
+  getResponsiveScale,
+  isFinePointerDevice,
+  prefersReducedMotion,
+} from "@/lib/physicsResponsive";
 
 const TECH_STACK = [
   "React", "Next.js", "TypeScript", "Tailwind CSS", 
@@ -36,10 +41,12 @@ export default function TechStackPhysics() {
         height,
         wireframes: false,
         background: "transparent",
-        pixelRatio: window.devicePixelRatio,
+        pixelRatio: cappedPixelRatio(),
       },
     });
     renderRef.current = render;
+
+    const reducedMotion = prefersReducedMotion();
 
     // 3. Setup Runner (started lazily once the scene scrolls into view — see step 9)
     const runner = Matter.Runner.create();
@@ -137,10 +144,11 @@ export default function TechStackPhysics() {
       }
     });
 
-    // 7. Mouse Interaction — only attach on devices with an actual mouse.
+    // 7. Mouse Interaction — only attach on devices with an actual mouse, and
+    // not under reduced motion (there's no live simulation to drag).
     // Matter's touch listeners call preventDefault() on touchmove, which
     // would otherwise block native scrolling on mobile/touch devices.
-    if (isFinePointerDevice()) {
+    if (isFinePointerDevice() && !reducedMotion) {
       const mouse = Matter.Mouse.create(render.canvas);
       const mouseConstraint = Matter.MouseConstraint.create(engine, {
         mouse: mouse,
@@ -177,31 +185,38 @@ export default function TechStackPhysics() {
 
     window.addEventListener("resize", handleResize);
 
-    // 9. Only run the simulation while the scene is actually on screen —
-    // this is well below the fold on the services page, so there's no
-    // reason to keep an animation loop ticking before the user scrolls to it.
-    let isRunning = false;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const intersecting = entries[0].isIntersecting;
-        if (intersecting && !isRunning) {
-          Matter.Runner.run(runner, engine);
-          Matter.Render.run(render);
-          isRunning = true;
-        } else if (!intersecting && isRunning) {
-          Matter.Runner.stop(runner);
-          Matter.Render.stop(render);
-          isRunning = false;
-        }
-      },
-      { threshold: 0.05 }
-    );
-    observer.observe(sceneRef.current);
+    // 9. Reduced motion: step the pile to rest once and paint a single static
+    // frame — no runner, no render loop, no scroll observer.
+    let observer: IntersectionObserver | null = null;
+    if (reducedMotion) {
+      for (let i = 0; i < 260; i++) Matter.Engine.update(engine, 1000 / 60);
+      Matter.Render.world(render);
+    } else {
+      // Otherwise only run the simulation while the scene is actually on screen
+      // — it's well below the fold on the services page.
+      let isRunning = false;
+      observer = new IntersectionObserver(
+        (entries) => {
+          const intersecting = entries[0].isIntersecting;
+          if (intersecting && !isRunning) {
+            Matter.Runner.run(runner, engine);
+            Matter.Render.run(render);
+            isRunning = true;
+          } else if (!intersecting && isRunning) {
+            Matter.Runner.stop(runner);
+            Matter.Render.stop(render);
+            isRunning = false;
+          }
+        },
+        { threshold: 0.05 }
+      );
+      observer.observe(sceneRef.current);
+    }
 
     // 10. Cleanup
     return () => {
       window.removeEventListener("resize", handleResize);
-      observer.disconnect();
+      observer?.disconnect();
       if (renderRef.current) {
         Matter.Render.stop(renderRef.current);
         if (renderRef.current.canvas) {

@@ -2,7 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import Matter from "matter-js";
-import { getResponsiveScale, isFinePointerDevice } from "@/lib/physicsResponsive";
+import {
+  cappedPixelRatio,
+  getResponsiveScale,
+  isFinePointerDevice,
+  prefersReducedMotion,
+} from "@/lib/physicsResponsive";
 
 const PHASES = [
   "01 Discover",
@@ -40,16 +45,21 @@ export default function ProcessPhysics() {
         height,
         wireframes: false,
         background: "transparent",
-        pixelRatio: window.devicePixelRatio,
+        pixelRatio: cappedPixelRatio(),
       },
     });
     renderRef.current = render;
 
-    // 3. Setup Runner
+    const reducedMotion = prefersReducedMotion();
+
+    // 3. Setup Runner — skipped entirely under reduced motion (a single static
+    // frame is painted after the scene is built, see step 6b).
     const runner = Matter.Runner.create();
     runnerRef.current = runner;
-    Matter.Runner.run(runner, engine);
-    Matter.Render.run(render);
+    if (!reducedMotion) {
+      Matter.Runner.run(runner, engine);
+      Matter.Render.run(render);
+    }
 
     // 4. Create Boundaries (thick walls so they don't clip out easily)
     const wallOptions = {
@@ -109,7 +119,9 @@ export default function ProcessPhysics() {
     Matter.World.add(world, [...bodies, ...constraints]);
 
     // Give the first node a little push to start the floating animation
-    Matter.Body.applyForce(bodies[0], bodies[0].position, { x: 0.2, y: -0.2 });
+    if (!reducedMotion) {
+      Matter.Body.applyForce(bodies[0], bodies[0].position, { x: 0.2, y: -0.2 });
+    }
 
     // 6. Custom Render for Nodes and Springs
     Matter.Events.on(render, 'afterRender', () => {
@@ -172,13 +184,20 @@ export default function ProcessPhysics() {
       }
     });
 
-    // 7. Mouse Interaction — only attach on devices with an actual mouse.
+    // 6b. Reduced motion: paint the nodes at their spawn positions once and
+    // stop — no runner, no push, no drag handles.
+    if (reducedMotion) {
+      Matter.Render.world(render);
+    }
+
+    // 7. Mouse Interaction — only attach on devices with an actual mouse, and
+    // not under reduced motion (there's no live simulation to drag).
     // This canvas is a `fixed inset-0` layer behind the *entire* Process
     // page, and Matter's touch listeners call preventDefault() on
     // touchmove to support drag-and-throw — on a touch device that was
     // swallowing every scroll gesture on the page. Desktop keeps the toy;
     // mobile just gets the ambient floating animation.
-    if (isFinePointerDevice()) {
+    if (isFinePointerDevice() && !reducedMotion) {
       const mouse = Matter.Mouse.create(render.canvas);
       const mouseConstraint = Matter.MouseConstraint.create(engine, {
         mouse: mouse,

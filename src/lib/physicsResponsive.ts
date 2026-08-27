@@ -23,3 +23,24 @@ export function isFinePointerDevice(): boolean {
     window.matchMedia("(hover: hover) and (pointer: fine)").matches
   );
 }
+
+/**
+ * True when the visitor has asked the OS to minimize non-essential motion.
+ * The physics scenes settle to a static frame instead of animating when this
+ * is set (the CSS `prefers-reduced-motion` block can't reach a canvas loop).
+ */
+export function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
+
+/**
+ * Device pixel ratio, capped so high-DPI phones don't pay a 3x canvas fill
+ * cost for a decorative scene. 2 is plenty for crisp text/edges.
+ */
+export function cappedPixelRatio(max = 2): number {
+  if (typeof window === "undefined") return 1;
+  return Math.min(window.devicePixelRatio || 1, max);
+}

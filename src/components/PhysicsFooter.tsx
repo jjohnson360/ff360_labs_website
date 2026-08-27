@@ -3,7 +3,12 @@
 import { useEffect, useRef } from "react";
 import Matter from "matter-js";
 import { usePathname } from "next/navigation";
-import { getResponsiveScale, isFinePointerDevice } from "@/lib/physicsResponsive";
+import {
+  cappedPixelRatio,
+  getResponsiveScale,
+  isFinePointerDevice,
+  prefersReducedMotion,
+} from "@/lib/physicsResponsive";
 
 // Decorative text blocks only — the real footer nav/contact lives in the
 // accessible markup above this canvas (see Footer.tsx).
@@ -41,10 +46,12 @@ export default function PhysicsFooter() {
         height,
         wireframes: false,
         background: "transparent",
-        pixelRatio: window.devicePixelRatio,
+        pixelRatio: cappedPixelRatio(),
       },
     });
     renderRef.current = render;
+
+    const reducedMotion = prefersReducedMotion();
 
     // 3. Setup Runner (started lazily once the footer scrolls into view — see step 9)
     const runner = Matter.Runner.create();
@@ -129,10 +136,11 @@ export default function PhysicsFooter() {
       }
     });
 
-    // 7. Mouse Interaction — only attach on devices with an actual mouse.
+    // 7. Mouse Interaction — only attach on devices with an actual mouse, and
+    // not under reduced motion (there's no live simulation to drag).
     // Matter's touch listeners call preventDefault() on touchmove, which
     // would otherwise block native scrolling on mobile/touch devices.
-    if (isFinePointerDevice()) {
+    if (isFinePointerDevice() && !reducedMotion) {
       const mouse = Matter.Mouse.create(render.canvas);
       const mouseConstraint = Matter.MouseConstraint.create(engine, {
         mouse: mouse,
@@ -172,18 +180,32 @@ export default function PhysicsFooter() {
     const observer = new IntersectionObserver(
       (entries) => {
         const intersecting = entries[0].isIntersecting;
+        if (!intersecting) {
+          if (isRunning) {
+            Matter.Runner.stop(runner);
+            Matter.Render.stop(render);
+            isRunning = false;
+          }
+          return;
+        }
 
-        if (intersecting && !isRunning) {
+        if (reducedMotion) {
+          // Drop the blocks in, settle to rest synchronously, paint one frame.
+          if (!dropped) {
+            Matter.World.add(world, bodies);
+            for (let i = 0; i < 200; i++) Matter.Engine.update(engine, 1000 / 60);
+            Matter.Render.world(render);
+            dropped = true;
+          }
+          return;
+        }
+
+        if (!isRunning) {
           Matter.Runner.run(runner, engine);
           Matter.Render.run(render);
           isRunning = true;
-        } else if (!intersecting && isRunning) {
-          Matter.Runner.stop(runner);
-          Matter.Render.stop(render);
-          isRunning = false;
         }
-
-        if (intersecting && !dropped) {
+        if (!dropped) {
           Matter.World.add(world, bodies);
           dropped = true;
         }

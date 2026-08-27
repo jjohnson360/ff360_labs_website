@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Matter from "matter-js";
+import { cappedPixelRatio, prefersReducedMotion } from "@/lib/physicsResponsive";
 
 export default function PhysicsSandbox() {
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -29,16 +30,21 @@ export default function PhysicsSandbox() {
         height,
         wireframes: false,
         background: "transparent",
-        pixelRatio: window.devicePixelRatio,
+        pixelRatio: cappedPixelRatio(),
       },
     });
     renderRef.current = render;
 
-    // 3. Setup Runner
+    const reducedMotion = prefersReducedMotion();
+
+    // 3. Setup Runner — under reduced motion the letters are settled to rest
+    // synchronously and a single frame is painted (see step 8b) instead.
     const runner = Matter.Runner.create();
     runnerRef.current = runner;
-    Matter.Runner.run(runner, engine);
-    Matter.Render.run(render);
+    if (!reducedMotion) {
+      Matter.Runner.run(runner, engine);
+      Matter.Render.run(render);
+    }
 
     // 4. Create Boundaries
     const wallOptions = {
@@ -129,19 +135,27 @@ export default function PhysicsSandbox() {
       }
     });
 
-    // 7. Mouse Interaction
-    const mouse = Matter.Mouse.create(render.canvas);
-    const mouseConstraint = Matter.MouseConstraint.create(engine, {
-      mouse: mouse,
-      constraint: {
-        stiffness: 0.2,
-        render: { visible: false },
-      },
-    });
-    Matter.World.add(world, mouseConstraint);
+    // 7. Mouse Interaction — skipped under reduced motion (no live sim to drag).
+    if (!reducedMotion) {
+      const mouse = Matter.Mouse.create(render.canvas);
+      const mouseConstraint = Matter.MouseConstraint.create(engine, {
+        mouse: mouse,
+        constraint: {
+          stiffness: 0.2,
+          render: { visible: false },
+        },
+      });
+      Matter.World.add(world, mouseConstraint);
 
-    // Fix scroll capture issue on canvas
-    render.mouse = mouse;
+      // Fix scroll capture issue on canvas
+      render.mouse = mouse;
+    }
+
+    // 8b. Reduced motion: drop the letters to rest once, paint a static frame.
+    if (reducedMotion) {
+      for (let i = 0; i < 240; i++) Matter.Engine.update(engine, 1000 / 60);
+      Matter.Render.world(render);
+    }
 
     // 8. Handle Resize
     const handleResize = () => {
