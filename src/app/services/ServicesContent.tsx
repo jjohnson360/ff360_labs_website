@@ -110,7 +110,7 @@ export default function ServicesContent() {
         </div>
         
         {/* Physics Bucket */}
-        <div className="relative w-full h-[50vh] min-h-[450px] border border-gold/20 rounded-sm overflow-hidden bg-[#0d0c0f]/80 shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] pointer-events-auto">
+        <div className="relative w-full h-[42vh] min-h-[300px] md:h-[50vh] md:min-h-[450px] border border-gold/20 rounded-sm overflow-hidden bg-[#0d0c0f]/80 shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] pointer-events-auto">
            <TechStackPhysics />
         </div>
       </div>

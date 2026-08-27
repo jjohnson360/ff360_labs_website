@@ -69,12 +69,20 @@ export default function TechStackPhysics() {
     // Scale pill size (and later, font) down on narrow/mobile containers so
     // pills sized for a ~900px desktop layout don't overcrowd a phone screen.
     const scale = getResponsiveScale(width);
+    // Font shrinks with the container but never below 11px, so labels stay
+    // readable on phones even when the pill geometry scales further down.
+    const fontPx = Math.max(11, Math.round(16 * scale));
     const bodies: Matter.Body[] = [];
-    const pillHeight = 50 * scale;
+    const pillHeight = Math.max(fontPx + 12, 50 * scale);
 
     TECH_STACK.forEach((tech) => {
-      // Approximate width based on character count (roughly 12px per char + 60px padding)
-      const pillWidth = (tech.length * 12 + 60) * scale;
+      // Width is the larger of the desktop-derived size and whatever the
+      // (px-floored) label actually needs, so short pills don't collapse
+      // narrower than their text on mobile.
+      const pillWidth = Math.max(
+        (tech.length * 12 + 60) * scale,
+        tech.length * fontPx * 0.62 + 24
+      );
 
       const bodyOptions: Matter.IChamferableBodyDefinition = {
         label: tech,
@@ -89,9 +97,12 @@ export default function TechStackPhysics() {
         },
       };
 
-      // Stagger drops across the top
-      const x = (width * 0.2) + (Math.random() * (width * 0.6));
-      const y = Math.random() * -800 - 100; // Drop from above at different times
+      // Stagger drops across the top — keep away from the side walls so wide
+      // pills don't spawn already clipping on a narrow container.
+      const x = (width * 0.3) + (Math.random() * (width * 0.4));
+      // Stagger the drop over a span that tracks the container height so pills
+      // don't rain from far above a short mobile box.
+      const y = Math.random() * -(height * 1.5) - 60;
 
       const body = Matter.Bodies.rectangle(x, y, pillWidth, pillHeight, bodyOptions);
 
@@ -134,7 +145,7 @@ export default function TechStackPhysics() {
         ctx.stroke();
 
         // Draw Text
-        ctx.font = `bold ${Math.round(16 * scale)}px 'Inter', sans-serif`;
+        ctx.font = `bold ${fontPx}px 'Inter', sans-serif`;
         ctx.fillStyle = "#e0e0e0"; // Silver light for text
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";

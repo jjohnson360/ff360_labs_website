@@ -11,8 +11,13 @@ const REFERENCE_WIDTH = 900;
 /**
  * Returns a scale factor (clamped between `min` and 1) for a given
  * container width, so bodies shrink proportionally on narrow screens.
+ *
+ * The floor is low (0.4) so pills sized for a 900px desktop layout actually
+ * fit a ~320px phone container instead of jamming against the walls — text
+ * legibility is handled separately (callers clamp font size to a px floor),
+ * so geometry can shrink further than text.
  */
-export function getResponsiveScale(width: number, min = 0.55): number {
+export function getResponsiveScale(width: number, min = 0.4): number {
   return Math.max(min, Math.min(1, width / REFERENCE_WIDTH));
 }
 
