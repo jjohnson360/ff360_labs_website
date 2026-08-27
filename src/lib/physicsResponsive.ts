@@ -49,3 +49,44 @@ export function cappedPixelRatio(max = 2): number {
   if (typeof window === "undefined") return 1;
   return Math.min(window.devicePixelRatio || 1, max);
 }
+
+// Matter.Body is structurally `{ position: {x, y} }` for our purposes — kept
+// loose so callers don't need to import Matter's types into this file.
+interface XYBody {
+  position: { x: number; y: number };
+}
+
+/**
+ * Safety net for the decorative Matter scenes: if a body has drifted outside
+ * a generous margin around the canvas — which happens on mobile when the URL
+ * bar shows/hides and the `vh`-sized container resizes mid-simulation, or
+ * when a backgrounded tab resumes with a large timestep — drop it back to a
+ * random spot near the top and kill its velocity. Without this the blocks can
+ * tunnel through a wall and vanish for good.
+ *
+ * `setPosition`/`setVelocity` are passed in so this stays Matter-agnostic;
+ * callers hand over `Matter.Body.setPosition` and `Matter.Body.setVelocity`.
+ */
+export function keepBodiesInBounds<T extends XYBody>(
+  bodies: T[],
+  width: number,
+  height: number,
+  setPosition: (body: T, pos: { x: number; y: number }) => void,
+  setVelocity: (body: T, vel: { x: number; y: number }) => void,
+): void {
+  const marginX = width * 0.5 + 200;
+  // Generous headroom above the canvas — the scenes stagger their spawn drops
+  // from a few container-heights up, and that is not "escaped".
+  const ceilingY = -(height * 5) - 500;
+  for (const body of bodies) {
+    const { x, y } = body.position;
+    const escaped =
+      x < -marginX || x > width + marginX || y > height + 300 || y < ceilingY;
+    if (!escaped) continue;
+    setPosition(body, {
+      x: width * 0.3 + Math.random() * width * 0.4,
+      y: -60 - Math.random() * 120,
+    });
+    setVelocity(body, { x: 0, y: 0 });
+  }
+}
