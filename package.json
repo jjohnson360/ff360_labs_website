@@ -1,12 +1,13 @@
 {
-  "name": "next-temp",
+  "name": "ff360-labs-website",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@formspree/react": "^3.0.0",
@@ -16,7 +17,6 @@
     "lucide-react": "^1.25.0",
     "matter-js": "^0.20.0",
     "next": "16.2.11",
-    "poly-decomp": "^0.3.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "three": "^0.185.1"
