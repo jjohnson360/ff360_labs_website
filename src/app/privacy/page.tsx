@@ -12,9 +12,10 @@ export const metadata: Metadata = {
 /*
  * Plain-language privacy statement for a brochure site whose only data
  * collection is the contact form. TODO(content): have this reviewed against
- * your actual obligations, set the "Last updated" date, and add a legal
- * entity name if the studio is incorporated.
+ * your actual obligations, and add a legal entity name if the studio is
+ * incorporated. Bump LAST_UPDATED whenever the text below changes.
  */
+const LAST_UPDATED = "August 27, 2026";
 
 const sections = [
   {
@@ -74,8 +75,7 @@ export default function Privacy() {
           <span className="metal-silver shimmer-text">How we handle your data.</span>
         </h1>
         <p className="mt-6 font-mono text-[11px] tracking-widest uppercase text-text-faint">
-          {/* TODO(content): set the real date when this is reviewed */}
-          Last updated — TODO(content)
+          Last updated — {LAST_UPDATED}
         </p>
       </div>
 

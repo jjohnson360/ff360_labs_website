@@ -11,19 +11,18 @@ export const metadata: Metadata = {
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────
- * CONTENT SCAFFOLD — every string below marked `TODO(content)` is placeholder
- * draft copy written in the site voice. Replace with the real story before
- * treating this page as final. The layout, structure, and styling are done.
+ * DRAFT COPY — the bio and timeline below are drawn from the founder's public
+ * profile (github.com/jjohnson360) and written in the site voice. Still worth
+ * a founder review pass before this is treated as final; the layout is done.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-// TODO(content): confirm — solo operation or a small team? Adjust "I" vs "we"
-// across the whole page to match. The rest of the site currently says "we".
+// The site speaks as "we" (a small studio) while being honest that it's one
+// person's background pulled together — see the "Who's behind it" section.
 const principles = [
   {
     tag: "01",
     title: "Scope before pixels",
-    // TODO(content): rewrite in your own words
     body: "Every project starts with a written brief so decisions are made once, on purpose — not renegotiated halfway through the build.",
   },
   {
@@ -43,11 +42,23 @@ const principles = [
   },
 ];
 
-// TODO(content): replace with real milestones, or delete this block entirely
 const timeline = [
-  { year: "20XX", note: "ff360_labs founded — TODO(content): the origin story in a sentence." },
-  { year: "20XX", note: "TODO(content): a project or shift worth noting." },
-  { year: "Today", note: "TODO(content): what the studio is focused on now." },
+  {
+    year: "Before",
+    note: "Years of work across engineering, music production, and 3D art — the background everything here is built on.",
+  },
+  {
+    year: "2025",
+    note: "Started structured programming coursework and a self-directed path into software development.",
+  },
+  {
+    year: "2026",
+    note: "ff360_labs takes shape — this site, procedural 3D pipelines scripted in Blender, and a run of audio plugins and metering tools.",
+  },
+  {
+    year: "Today",
+    note: "Building where code, sound, and visual craft meet, and taking on select client work.",
+  },
 ];
 
 export default function About() {
@@ -60,14 +71,12 @@ export default function About() {
             The Studio
           </div>
           <h1 className="font-display font-semibold text-4xl md:text-5xl max-w-2xl text-text">
-            {/* TODO(content): the one-line positioning statement */}
             A{" "}
             <span className="metal-gold shimmer-text">creative technology</span>{" "}
             studio for ideas that don&apos;t fit a template.
           </h1>
         </div>
         <p className="text-text-dim max-w-[340px] text-sm">
-          {/* TODO(content): 1–2 sentences on what the studio is and who it's for */}
           ff360_labs designs and builds websites, interactive experiences, 3D
           work, and creative software — for small businesses, artists, and
           founders who want something made rather than assembled.
@@ -80,20 +89,22 @@ export default function About() {
           Who&apos;s behind it
         </div>
         <div className="space-y-5 text-text-dim leading-relaxed max-w-2xl">
-          {/* TODO(content): the real bio — name, background, what you did before
-              ff360_labs, why you started it, what you're best at. Keep it in
-              first or third person consistently with the rest of the site. */}
           <p>
-            <span className="text-text">TODO(content): Founder name</span> started
-            ff360_labs after years spent bouncing between design, front-end
-            development, 3D, and music production — and getting tired of picking
-            just one.
+            <span className="text-text">Jackie &ldquo;Fred&rdquo; Johnson</span>{" "}
+            started ff360_labs after years spent moving between engineering,
+            music production, and 3D art — and deciding not to pick just one.
+            The studio is where those threads come together and point at
+            AI-assisted software development.
           </p>
           <p>
-            The studio is deliberately small. That means the person scoping your
-            project is the person designing and building it, and the work stays
-            close to the original idea instead of drifting through a chain of
-            handoffs.
+            It&apos;s deliberately small. The person scoping your project is the
+            person designing and building it, so the work stays close to the
+            original idea instead of drifting through a chain of handoffs.
+          </p>
+          <p>
+            The through-line is projects that sit where code, sound, and visual
+            craft meet — web and interactive builds, procedural 3D, and audio
+            tooling.
           </p>
           <p>
             Based in {SITE_LOCATION}, working with clients anywhere.
