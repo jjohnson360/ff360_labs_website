@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Hero3D from "@/components/Hero3D";
+import HeroBlueprint from "@/components/HeroBlueprint";
 import { NAV_LINKS } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <div className="relative min-h-[90vh] flex flex-col justify-center overflow-hidden">
-      <Hero3D />
+      <HeroBlueprint />
 
       <div className="relative z-10 flex flex-col items-center w-full">
         <div className="font-mono text-xs tracking-[0.28em] uppercase text-gold mb-7 flex items-center gap-3 before:content-[''] before:w-7 before:h-px before:bg-gold-dark after:content-[''] after:w-7 after:h-px after:bg-gold-dark">
