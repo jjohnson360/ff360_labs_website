@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Pricing",
+  description:
+    "Three ways to begin with ff360_labs: Launch ($750–$1,500), Growth ($1,500–$3,000), and custom Innovation builds for 3D, interactive, and experimental work.",
+  alternates: { canonical: "/pricing" },
+};
 
 const plans = [
   {

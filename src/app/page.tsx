@@ -1,5 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Hero3D from "@/components/Hero3D";
+import { NAV_LINKS } from "@/lib/site";
+
+export const metadata: Metadata = {
+  // Home owns the brand title verbatim rather than the "%s — ff360_labs" template.
+  title: { absolute: "ff360_labs — Creative Technology Studio" },
+  alternates: { canonical: "/" },
+};
 
 export default function Home() {
   return (
@@ -33,17 +41,11 @@ export default function Home() {
         </div>
 
         <div className="mt-16 flex flex-col gap-4 max-w-lg w-full">
-          {[
-            { href: "/services", label: "01", text: "Services", desc: "What gets built" },
-            { href: "/process", label: "02", text: "Process", desc: "How it runs" },
-            { href: "/pricing", label: "03", text: "Pricing", desc: "Starting points" },
-            { href: "/work", label: "04", text: "Work", desc: "Selected projects" },
-            { href: "/contact", label: "05", text: "Contact", desc: "Get in touch" },
-          ].map((item) => (
+          {NAV_LINKS.map((item, i) => (
             <Link key={item.href} href={item.href} className="glass-panel glass-panel-hover flex items-center justify-between p-4 rounded-sm transition-all group">
               <div className="flex items-center gap-4">
-                <span className="font-mono text-[10px] text-gold">{item.label}</span>
-                <span className="font-display text-lg tracking-wide">{item.text}</span>
+                <span className="font-mono text-[10px] text-gold">{String(i + 1).padStart(2, "0")}</span>
+                <span className="font-display text-lg tracking-wide">{item.name}</span>
               </div>
               <div className="flex items-center gap-4 text-text-dim">
                 <span className="font-mono text-[10px] uppercase hidden sm:block tracking-widest">{item.desc}</span>

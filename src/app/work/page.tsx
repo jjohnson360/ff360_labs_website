@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Work",
+  description:
+    "Selected work from ff360_labs — software, 3D environments, brand identity systems, and music-technology projects.",
+  alternates: { canonical: "/work" },
+};
 
 const projects = [
   {

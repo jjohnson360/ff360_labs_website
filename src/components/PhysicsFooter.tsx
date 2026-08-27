@@ -5,11 +5,13 @@ import Matter from "matter-js";
 import { usePathname } from "next/navigation";
 import { getResponsiveScale, isFinePointerDevice } from "@/lib/physicsResponsive";
 
+// Decorative text blocks only — the real footer nav/contact lives in the
+// accessible markup above this canvas (see Footer.tsx).
 const FOOTER_ITEMS = [
   "© 2026 ff360_labs",
   "Always building something new.",
-  "GitHub",
-  "Contact Us"
+  "Conway, Arkansas",
+  "Working globally",
 ];
 
 export default function PhysicsFooter() {
