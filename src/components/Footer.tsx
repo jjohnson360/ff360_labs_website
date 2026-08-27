@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { NAV_LINKS, SITE_EMAIL, SITE_LOCATION, SITE_NAME } from "@/lib/site";
+import { LEGAL_LINKS, NAV_LINKS, SITE_EMAIL, SITE_LOCATION, SITE_NAME } from "@/lib/site";
 
 const PhysicsFooter = dynamic(() => import("@/components/PhysicsFooter"), {
   ssr: false,
@@ -64,10 +64,19 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="max-w-[1180px] mx-auto px-8 pb-8">
+      <div className="max-w-[1180px] mx-auto px-8 pb-8 flex flex-wrap items-center gap-x-4 gap-y-2">
         <p className="font-mono text-[10px] tracking-widest uppercase text-text-faint">
           © {year} {SITE_NAME}. All rights reserved.
         </p>
+        {LEGAL_LINKS.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="font-mono text-[10px] tracking-widest uppercase text-text-faint hover:text-text-dim transition-colors"
+          >
+            {link.name}
+          </Link>
+        ))}
       </div>
 
       {/* Decorative physics strip — content above is the accessible source of truth. */}

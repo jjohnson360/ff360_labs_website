@@ -9,6 +9,7 @@ import {
   SITE_NAME,
   SITE_TAGLINE,
   SITE_DESCRIPTION,
+  SITE_EMAIL,
 } from "@/lib/site";
 
 const inter = Inter({
@@ -83,6 +84,32 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: SITE_NAME,
+  url: SITE_URL,
+  description: SITE_DESCRIPTION,
+  email: SITE_EMAIL,
+  slogan: "Always building something new.",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Conway",
+    addressRegion: "AR",
+    addressCountry: "US",
+  },
+  areaServed: "Worldwide",
+  knowsAbout: [
+    "Web design",
+    "Web development",
+    "Interactive web experiences",
+    "3D modeling and visualization",
+    "Creative coding",
+    "Branding",
+    "Music technology",
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -91,6 +118,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased min-h-screen flex flex-col relative overflow-x-hidden" suppressHydrationWarning>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+          }}
+        />
         <CustomCursor />
 
         <a

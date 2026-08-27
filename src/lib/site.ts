@@ -36,5 +36,11 @@ export const NAV_LINKS: NavLink[] = [
   { name: "Process", href: "/process", desc: "How it runs" },
   { name: "Pricing", href: "/pricing", desc: "Starting points" },
   { name: "Work", href: "/work", desc: "Selected projects" },
+  { name: "About", href: "/about", desc: "Who's behind it" },
   { name: "Contact", href: "/contact", desc: "Get in touch" },
+];
+
+/** Secondary links shown only in the footer, not the primary nav. */
+export const LEGAL_LINKS: NavLink[] = [
+  { name: "Privacy", href: "/privacy", desc: "How we handle your data" },
 ];
