@@ -1,25 +1,37 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
+export const metadata: Metadata = {
+  title: "Work",
+  description:
+    "Selected work from ff360_labs — full-stack applications, procedural 3D environments, and creative audio software.",
+  alternates: { canonical: "/work" },
+};
+
+/*
+ * Real projects, kept intentionally light for now — titles and categories
+ * only, no case studies or images yet. Sourced from github.com/jjohnson360.
+ */
 const projects = [
   {
-    title: "Retail Inventory Sync Engine",
-    category: "Software",
-    desc: "Square × Shopify API",
+    title: "Personal Finance Tracker",
+    category: "Full-Stack / AI",
+    desc: "FastAPI · PostgreSQL · React",
   },
   {
-    title: "Victorian Apothecary Scene",
-    category: "3D / Environment",
-    desc: "Blender → Unity, procedural",
+    title: "Modular Audio Meter",
+    category: "Creative Software",
+    desc: "C++ / JUCE metering suite",
   },
   {
-    title: "ff360 Identity System",
-    category: "Brand",
-    desc: "Logo, mark, guidelines",
+    title: "Synthwave Plugin Suite",
+    category: "Audio / DSP",
+    desc: "VST3 & AU effects",
   },
   {
-    title: "Original Score & Mix",
-    category: "Music Tech",
-    desc: "Full production",
+    title: "Victorian Apothecary Environment",
+    category: "3D / Procedural",
+    desc: "Blender-scripted, Unity-ready",
   },
 ];
 

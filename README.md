@@ -1,36 +1,84 @@
-# FF360 Labs - Studio Website
+# ff360_labs — Studio Website
 
-A premium, interactive digital studio portfolio built with Next.js, React Three Fiber, and Matter.js.
+Marketing site for ff360_labs, a creative technology studio. Industrial-luxury
+aesthetic (charcoal / silver / gold), an interactive WebGL hero, and tactile
+Matter.js physics scenes.
 
-## Tech Stack
-- **Framework:** [Next.js 14+](https://nextjs.org/) (App Router)
-- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
-- **Animations:** [Framer Motion](https://www.framer.com/motion/)
-- **3D Graphics:** [React Three Fiber](https://docs.pmnd.rs/react-three-fiber) / Drei
-- **2D Physics:** [Matter.js](https://brm.io/matter-js/)
-- **Icons:** [Lucide React](https://lucide.dev/)
+## Tech stack
 
-## Key Features
-- **Interactive 3D Hero:** Mouse-reactive WebGL scenes using `useGLTF`.
-- **Tactile Physics Sandboxes:** Interactive rigid and soft-body physics simulations across multiple pages (Tech Stack Pit, Floating Process Nodes, Interactive Footer).
-- **Dynamic Custom Cursor:** A `framer-motion` spring-based cursor that shape-shifts its icon based on the active route.
-- **Industrial Luxury Aesthetic:** A bespoke design system built on charcoal, silver, and metallic gold color tokens.
+| Area | Choice |
+| --- | --- |
+| Framework | [Next.js 16](https://nextjs.org/) (App Router, Turbopack) |
+| Language | TypeScript, React 19 |
+| Styling | [Tailwind CSS v4](https://tailwindcss.com/) (`@theme` tokens in `src/app/globals.css`) |
+| Fonts | `next/font` — Fraunces (display), Inter (sans), JetBrains Mono |
+| Animation | [Framer Motion](https://www.framer.com/motion/) |
+| 3D | [React Three Fiber](https://r3f.docs.pmnd.rs/) + Drei |
+| 2D physics | [Matter.js](https://brm.io/matter-js/) |
+| Icons | [lucide-react](https://lucide.dev/) |
+| Contact form | [Formspree](https://formspree.io/) (`@formspree/react`) |
+| Hosting | Vercel |
 
-## Development
+> **Note:** this repo tracks the Next.js canary/latest line closely. Before
+> changing framework-level code, read the relevant guide under
+> `node_modules/next/dist/docs/` — APIs may differ from older releases.
 
-First, install dependencies:
+## Getting started
+
 ```bash
 npm install
-```
-
-Then, run the development server:
-```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open <http://localhost:3000>.
 
-## Project Structure
-- `src/app/`: Next.js App Router pages (`/services`, `/process`, `/pricing`, `/work`, `/contact`).
-- `src/components/`: Reusable React components (Physics engines, 3D Canvas, UI layout).
-- `public/`: Static assets (GLB models, images).
+### Scripts
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Dev server (Turbopack) |
+| `npm run build` | Production build |
+| `npm start` | Serve the production build |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | `tsc --noEmit` |
+
+CI (`.github/workflows/ci.yml`) runs lint + typecheck + build on every PR.
+
+## Environment variables
+
+Copy into `.env.local` (all optional for local dev):
+
+| Variable | Purpose | Fallback |
+| --- | --- | --- |
+| `NEXT_PUBLIC_FORMSPREE_FORM_ID` | Contact form target | form posts are inert without it |
+| `NEXT_PUBLIC_SITE_URL` | Canonical origin for metadata, sitemap, robots, OG tags | Vercel's production URL at build, else `http://localhost:3000` |
+
+Set both in the Vercel project settings for production.
+
+## Routes
+
+| Path | Notes |
+| --- | --- |
+| `/` | Hero (R3F) + section index |
+| `/services` | Six disciplines + Tech Stack physics pit |
+| `/process` | Four phases + floating-node physics background |
+| `/pricing` | Three tiers |
+| `/work` | Selected projects *(placeholder content — needs real case studies)* |
+| `/about` | Studio background *(draft copy — see `TODO(content)` markers)* |
+| `/contact` | Formspree contact form |
+| `/privacy` | Privacy statement |
+
+`sitemap.xml`, `robots.txt`, `opengraph-image`, and `twitter-image` are
+generated from `src/app/`. Site-wide config (URL, nav, copy) lives in
+`src/lib/site.ts`.
+
+## Project structure
+
+```
+src/
+  app/            App Router routes, layout, metadata, error/loading UI
+  components/     Header, Footer, physics scenes, R3F hero, cursor, ErrorBoundary
+  lib/           site config + shared physics helpers
+public/models/   ff360_core.glb (hero model)
+docs/            working notes and the previous vanilla HTML site (archived)
+```

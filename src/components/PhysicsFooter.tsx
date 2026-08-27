@@ -3,13 +3,20 @@
 import { useEffect, useRef } from "react";
 import Matter from "matter-js";
 import { usePathname } from "next/navigation";
-import { getResponsiveScale, isFinePointerDevice } from "@/lib/physicsResponsive";
+import {
+  cappedPixelRatio,
+  getResponsiveScale,
+  isFinePointerDevice,
+  prefersReducedMotion,
+} from "@/lib/physicsResponsive";
 
+// Decorative text blocks only — the real footer nav/contact lives in the
+// accessible markup above this canvas (see Footer.tsx).
 const FOOTER_ITEMS = [
   "© 2026 ff360_labs",
   "Always building something new.",
-  "GitHub",
-  "Contact Us"
+  "Conway, Arkansas",
+  "Working globally",
 ];
 
 export default function PhysicsFooter() {
@@ -39,10 +46,12 @@ export default function PhysicsFooter() {
         height,
         wireframes: false,
         background: "transparent",
-        pixelRatio: window.devicePixelRatio,
+        pixelRatio: cappedPixelRatio(),
       },
     });
     renderRef.current = render;
+
+    const reducedMotion = prefersReducedMotion();
 
     // 3. Setup Runner (started lazily once the footer scrolls into view — see step 9)
     const runner = Matter.Runner.create();
@@ -65,11 +74,20 @@ export default function PhysicsFooter() {
     // Scale down on narrow/mobile containers so blocks sized for a ~900px
     // desktop footer don't overcrowd a phone-width bar.
     const scale = getResponsiveScale(width);
+    // Font shrinks with the container but never below 10px so the labels stay
+    // readable on phones; pill geometry can scale further down than that.
+    const fontPx = Math.max(10, Math.round(12 * scale));
     const bodies: Matter.Body[] = [];
-    const pillHeight = 40 * scale;
+    const pillHeight = Math.max(fontPx + 10, 40 * scale);
 
     FOOTER_ITEMS.forEach((text) => {
-      const pillWidth = (text.length * 10 + 40) * scale; // Approximate width based on chars
+      // Size the block to the label at its actual (px-floored) mono font —
+      // JetBrains Mono runs ~0.6em per glyph — rather than a fixed heuristic
+      // that left the text as a tiny dot in an oversized box on mobile.
+      const pillWidth = Math.max(
+        (text.length * 10 + 40) * scale,
+        text.length * fontPx * 0.62 + 20
+      );
 
       const bodyOptions: Matter.IChamferableBodyDefinition = {
         label: text,
@@ -80,7 +98,7 @@ export default function PhysicsFooter() {
         render: { fillStyle: "transparent", strokeStyle: "transparent", lineWidth: 0 },
       };
 
-      const x = (width * 0.2) + (Math.random() * (width * 0.6));
+      const x = (width * 0.3) + (Math.random() * (width * 0.4));
       const y = -100 - (Math.random() * 200); // Start way offscreen top
 
       const body = Matter.Bodies.rectangle(x, y, pillWidth, pillHeight, bodyOptions);
@@ -117,7 +135,7 @@ export default function PhysicsFooter() {
         ctx.stroke();
 
         // Draw Text
-        ctx.font = `${Math.round(12 * scale)}px 'JetBrains Mono', monospace`;
+        ctx.font = `${fontPx}px 'JetBrains Mono', monospace`;
         ctx.fillStyle = "#a1a1aa"; // text-silver
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -127,10 +145,11 @@ export default function PhysicsFooter() {
       }
     });
 
-    // 7. Mouse Interaction — only attach on devices with an actual mouse.
+    // 7. Mouse Interaction — only attach on devices with an actual mouse, and
+    // not under reduced motion (there's no live simulation to drag).
     // Matter's touch listeners call preventDefault() on touchmove, which
     // would otherwise block native scrolling on mobile/touch devices.
-    if (isFinePointerDevice()) {
+    if (isFinePointerDevice() && !reducedMotion) {
       const mouse = Matter.Mouse.create(render.canvas);
       const mouseConstraint = Matter.MouseConstraint.create(engine, {
         mouse: mouse,
@@ -170,18 +189,32 @@ export default function PhysicsFooter() {
     const observer = new IntersectionObserver(
       (entries) => {
         const intersecting = entries[0].isIntersecting;
+        if (!intersecting) {
+          if (isRunning) {
+            Matter.Runner.stop(runner);
+            Matter.Render.stop(render);
+            isRunning = false;
+          }
+          return;
+        }
 
-        if (intersecting && !isRunning) {
+        if (reducedMotion) {
+          // Drop the blocks in, settle to rest synchronously, paint one frame.
+          if (!dropped) {
+            Matter.World.add(world, bodies);
+            for (let i = 0; i < 200; i++) Matter.Engine.update(engine, 1000 / 60);
+            Matter.Render.world(render);
+            dropped = true;
+          }
+          return;
+        }
+
+        if (!isRunning) {
           Matter.Runner.run(runner, engine);
           Matter.Render.run(render);
           isRunning = true;
-        } else if (!intersecting && isRunning) {
-          Matter.Runner.stop(runner);
-          Matter.Render.stop(render);
-          isRunning = false;
         }
-
-        if (intersecting && !dropped) {
+        if (!dropped) {
           Matter.World.add(world, bodies);
           dropped = true;
         }

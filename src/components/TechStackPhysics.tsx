@@ -2,7 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import Matter from "matter-js";
-import { getResponsiveScale, isFinePointerDevice } from "@/lib/physicsResponsive";
+import {
+  cappedPixelRatio,
+  getResponsiveScale,
+  isFinePointerDevice,
+  prefersReducedMotion,
+} from "@/lib/physicsResponsive";
 
 const TECH_STACK = [
   "React", "Next.js", "TypeScript", "Tailwind CSS", 
@@ -36,10 +41,12 @@ export default function TechStackPhysics() {
         height,
         wireframes: false,
         background: "transparent",
-        pixelRatio: window.devicePixelRatio,
+        pixelRatio: cappedPixelRatio(),
       },
     });
     renderRef.current = render;
+
+    const reducedMotion = prefersReducedMotion();
 
     // 3. Setup Runner (started lazily once the scene scrolls into view — see step 9)
     const runner = Matter.Runner.create();
@@ -62,12 +69,20 @@ export default function TechStackPhysics() {
     // Scale pill size (and later, font) down on narrow/mobile containers so
     // pills sized for a ~900px desktop layout don't overcrowd a phone screen.
     const scale = getResponsiveScale(width);
+    // Font shrinks with the container but never below 11px, so labels stay
+    // readable on phones even when the pill geometry scales further down.
+    const fontPx = Math.max(11, Math.round(16 * scale));
     const bodies: Matter.Body[] = [];
-    const pillHeight = 50 * scale;
+    const pillHeight = Math.max(fontPx + 12, 50 * scale);
 
     TECH_STACK.forEach((tech) => {
-      // Approximate width based on character count (roughly 12px per char + 60px padding)
-      const pillWidth = (tech.length * 12 + 60) * scale;
+      // Width is the larger of the desktop-derived size and whatever the
+      // (px-floored) label actually needs, so short pills don't collapse
+      // narrower than their text on mobile.
+      const pillWidth = Math.max(
+        (tech.length * 12 + 60) * scale,
+        tech.length * fontPx * 0.62 + 24
+      );
 
       const bodyOptions: Matter.IChamferableBodyDefinition = {
         label: tech,
@@ -82,9 +97,12 @@ export default function TechStackPhysics() {
         },
       };
 
-      // Stagger drops across the top
-      const x = (width * 0.2) + (Math.random() * (width * 0.6));
-      const y = Math.random() * -800 - 100; // Drop from above at different times
+      // Stagger drops across the top — keep away from the side walls so wide
+      // pills don't spawn already clipping on a narrow container.
+      const x = (width * 0.3) + (Math.random() * (width * 0.4));
+      // Stagger the drop over a span that tracks the container height so pills
+      // don't rain from far above a short mobile box.
+      const y = Math.random() * -(height * 1.5) - 60;
 
       const body = Matter.Bodies.rectangle(x, y, pillWidth, pillHeight, bodyOptions);
 
@@ -127,7 +145,7 @@ export default function TechStackPhysics() {
         ctx.stroke();
 
         // Draw Text
-        ctx.font = `bold ${Math.round(16 * scale)}px 'Inter', sans-serif`;
+        ctx.font = `bold ${fontPx}px 'Inter', sans-serif`;
         ctx.fillStyle = "#e0e0e0"; // Silver light for text
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -137,10 +155,11 @@ export default function TechStackPhysics() {
       }
     });
 
-    // 7. Mouse Interaction — only attach on devices with an actual mouse.
+    // 7. Mouse Interaction — only attach on devices with an actual mouse, and
+    // not under reduced motion (there's no live simulation to drag).
     // Matter's touch listeners call preventDefault() on touchmove, which
     // would otherwise block native scrolling on mobile/touch devices.
-    if (isFinePointerDevice()) {
+    if (isFinePointerDevice() && !reducedMotion) {
       const mouse = Matter.Mouse.create(render.canvas);
       const mouseConstraint = Matter.MouseConstraint.create(engine, {
         mouse: mouse,
@@ -177,31 +196,38 @@ export default function TechStackPhysics() {
 
     window.addEventListener("resize", handleResize);
 
-    // 9. Only run the simulation while the scene is actually on screen —
-    // this is well below the fold on the services page, so there's no
-    // reason to keep an animation loop ticking before the user scrolls to it.
-    let isRunning = false;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const intersecting = entries[0].isIntersecting;
-        if (intersecting && !isRunning) {
-          Matter.Runner.run(runner, engine);
-          Matter.Render.run(render);
-          isRunning = true;
-        } else if (!intersecting && isRunning) {
-          Matter.Runner.stop(runner);
-          Matter.Render.stop(render);
-          isRunning = false;
-        }
-      },
-      { threshold: 0.05 }
-    );
-    observer.observe(sceneRef.current);
+    // 9. Reduced motion: step the pile to rest once and paint a single static
+    // frame — no runner, no render loop, no scroll observer.
+    let observer: IntersectionObserver | null = null;
+    if (reducedMotion) {
+      for (let i = 0; i < 260; i++) Matter.Engine.update(engine, 1000 / 60);
+      Matter.Render.world(render);
+    } else {
+      // Otherwise only run the simulation while the scene is actually on screen
+      // — it's well below the fold on the services page.
+      let isRunning = false;
+      observer = new IntersectionObserver(
+        (entries) => {
+          const intersecting = entries[0].isIntersecting;
+          if (intersecting && !isRunning) {
+            Matter.Runner.run(runner, engine);
+            Matter.Render.run(render);
+            isRunning = true;
+          } else if (!intersecting && isRunning) {
+            Matter.Runner.stop(runner);
+            Matter.Render.stop(render);
+            isRunning = false;
+          }
+        },
+        { threshold: 0.05 }
+      );
+      observer.observe(sceneRef.current);
+    }
 
     // 10. Cleanup
     return () => {
       window.removeEventListener("resize", handleResize);
-      observer.disconnect();
+      observer?.disconnect();
       if (renderRef.current) {
         Matter.Render.stop(renderRef.current);
         if (renderRef.current.canvas) {

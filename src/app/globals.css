@@ -15,7 +15,9 @@
 
   --text: #f2efe9;
   --text-dim: #a7a49c;
-  --text-faint: #6c6a64;
+  /* Bumped from #6c6a64 (~3.3:1 on --bg, fails WCAG AA) to clear 4.5:1 for the
+     small mono labels that use it. */
+  --text-faint: #918d82;
 
   --line: rgba(201,161,90,0.16);
   --line-silver: rgba(185,192,196,0.16);
