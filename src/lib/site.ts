@@ -22,7 +22,7 @@ export const SITE_DESCRIPTION =
 
 export const SITE_LOCATION = "Conway, Arkansas";
 
-export const SITE_EMAIL = "hello@ff360labs.com";
+export const SITE_EMAIL = "ff360labs@gmail.com";
 
 export interface NavLink {
   name: string;
