@@ -55,25 +55,19 @@ export default function CustomCursor() {
     };
   }, [cursorX, cursorY]);
 
-  // Determine icon based on route
-  const getIcon = () => {
+  // Route-specific glyph. Kept small (16px) — it sits on the dark chip below,
+  // which is what actually carries the contrast over busy backgrounds.
+  const Icon = (() => {
     switch (pathname) {
-      case "/":
-        return <Hexagon className="w-5 h-5 text-gold drop-shadow-[0_0_8px_rgba(201,161,90,0.8)]" strokeWidth={1.5} />;
-      case "/services":
-        return <Code2 className="w-5 h-5 text-gold drop-shadow-[0_0_8px_rgba(201,161,90,0.8)]" strokeWidth={1.5} />;
-      case "/process":
-        return <Workflow className="w-5 h-5 text-gold drop-shadow-[0_0_8px_rgba(201,161,90,0.8)]" strokeWidth={1.5} />;
-      case "/pricing":
-        return <CircleDollarSign className="w-5 h-5 text-gold drop-shadow-[0_0_8px_rgba(201,161,90,0.8)]" strokeWidth={1.5} />;
-      case "/work":
-        return <FolderGit2 className="w-5 h-5 text-gold drop-shadow-[0_0_8px_rgba(201,161,90,0.8)]" strokeWidth={1.5} />;
-      case "/contact":
-        return <Mail className="w-5 h-5 text-gold drop-shadow-[0_0_8px_rgba(201,161,90,0.8)]" strokeWidth={1.5} />;
-      default:
-        return <MousePointer2 className="w-5 h-5 text-gold drop-shadow-[0_0_8px_rgba(201,161,90,0.8)]" strokeWidth={1.5} />;
+      case "/": return Hexagon;
+      case "/services": return Code2;
+      case "/process": return Workflow;
+      case "/pricing": return CircleDollarSign;
+      case "/work": return FolderGit2;
+      case "/contact": return Mail;
+      default: return MousePointer2;
     }
-  };
+  })();
 
   if (!isVisible) return null;
 
@@ -87,11 +81,18 @@ export default function CustomCursor() {
         translateY: "-50%",
       }}
     >
-      <div className="relative flex items-center justify-center">
-        {/* Subtle background glow */}
-        <div className="absolute inset-0 bg-gold/10 blur-xl rounded-full transform scale-150" />
-        {/* Icon */}
-        {getIcon()}
+      <div className="relative flex h-[26px] w-[26px] items-center justify-center">
+        {/* Outer glow — reads as a halo on dark, a soft edge on light linework */}
+        <div className="absolute inset-0 scale-150 rounded-full bg-gold/15 blur-md" />
+        {/* Dark backing chip: the contrast anchor. Stays legible over the
+            gold canvas linework on the home / work / about backgrounds. */}
+        <div className="absolute inset-0 rounded-full border border-gold/70 bg-[#0a0a0b]/80 shadow-[0_0_10px_rgba(0,0,0,0.6)] backdrop-blur-[2px]" />
+        {/* Precise centre dot so the actual pointer position is never ambiguous */}
+        <div className="absolute h-[3px] w-[3px] rounded-full bg-gold-light" />
+        <Icon
+          className="relative h-4 w-4 text-gold-light drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]"
+          strokeWidth={1.75}
+        />
       </div>
     </motion.div>
   );

@@ -7,6 +7,7 @@ import {
   cappedPixelRatio,
   getResponsiveScale,
   isFinePointerDevice,
+  keepBodiesInBounds,
   prefersReducedMotion,
 } from "@/lib/physicsResponsive";
 
@@ -57,18 +58,20 @@ export default function PhysicsFooter() {
     const runner = Matter.Runner.create();
     runnerRef.current = runner;
 
-    // 4. Create Boundaries
+    // 4. Create Boundaries — thick (120px) so bodies can't tunnel through, plus
+    // a high ceiling to catch anything flung upward.
     const wallOptions = {
       isStatic: true,
       render: { fillStyle: "transparent" },
     };
-    
-    // Bottom, Left, Right
-    const ground = Matter.Bodies.rectangle(width / 2, height + 25, width + 100, 50, wallOptions);
-    const leftWall = Matter.Bodies.rectangle(-25, height / 2, 50, height + 100, wallOptions);
-    const rightWall = Matter.Bodies.rectangle(width + 25, height / 2, 50, height + 100, wallOptions);
-    
-    Matter.World.add(world, [ground, leftWall, rightWall]);
+
+    const ceilingY = -Math.max(height * 2, 500) - 60;
+    const ground = Matter.Bodies.rectangle(width / 2, height + 60, width + 400, 120, wallOptions);
+    const leftWall = Matter.Bodies.rectangle(-60, height / 2, 120, height * 8 + 200, wallOptions);
+    const rightWall = Matter.Bodies.rectangle(width + 60, height / 2, 120, height * 8 + 200, wallOptions);
+    const ceiling = Matter.Bodies.rectangle(width / 2, ceilingY, width + 400, 120, wallOptions);
+
+    Matter.World.add(world, [ground, leftWall, rightWall, ceiling]);
 
     // 5. Create Footer Bodies (But don't add them yet!)
     // Scale down on narrow/mobile containers so blocks sized for a ~900px
@@ -113,6 +116,15 @@ export default function PhysicsFooter() {
     // 6. Custom Render for Text
     Matter.Events.on(render, 'afterRender', () => {
       const ctx = render.context;
+
+      keepBodiesInBounds(
+        bodies,
+        render.options.width ?? width,
+        render.options.height ?? height,
+        Matter.Body.setPosition,
+        Matter.Body.setVelocity,
+      );
+
       for (const body of bodies) {
         if (!body.label) continue;
         
@@ -159,26 +171,39 @@ export default function PhysicsFooter() {
       render.mouse = mouse;
     }
 
-    // 8. Handle Resize
-    const handleResize = () => {
-      if (!sceneRef.current || !renderRef.current) return;
-      const newWidth = sceneRef.current.clientWidth;
-      const newHeight = sceneRef.current.clientHeight;
-      
-      renderRef.current.canvas.width = newWidth;
-      renderRef.current.canvas.height = newHeight;
-      renderRef.current.options.width = newWidth;
-      renderRef.current.options.height = newHeight;
+    // 8. Handle Resize — ResizeObserver so a mobile URL bar toggle (which
+    // reflows the page and can change this bar's width) is caught too.
+    // Reposition walls, then recover any block left outside the new bounds.
+    const applySize = () => {
+      const el = sceneRef.current;
+      const r = renderRef.current;
+      if (!el || !r) return;
+      const nw = Math.max(el.clientWidth, 1);
+      const nh = Math.max(el.clientHeight, 1);
+      const cy = -Math.max(nh * 2, 500) - 60;
 
-      Matter.Body.setPosition(ground, { x: newWidth / 2, y: newHeight + 25 });
-      Matter.Body.setVertices(ground, Matter.Bodies.rectangle(newWidth / 2, newHeight + 25, newWidth + 100, 50).vertices);
-      Matter.Body.setPosition(rightWall, { x: newWidth + 25, y: newHeight / 2 });
-      Matter.Body.setVertices(rightWall, Matter.Bodies.rectangle(newWidth + 25, newHeight / 2, 50, newHeight + 100).vertices);
-      Matter.Body.setPosition(leftWall, { x: -25, y: newHeight / 2 });
-      Matter.Body.setVertices(leftWall, Matter.Bodies.rectangle(-25, newHeight / 2, 50, newHeight + 100).vertices);
+      Matter.Render.setSize(r, nw, nh);
+
+      Matter.Body.setPosition(ground, { x: nw / 2, y: nh + 60 });
+      Matter.Body.setVertices(ground, Matter.Bodies.rectangle(nw / 2, nh + 60, nw + 400, 120).vertices);
+      Matter.Body.setPosition(ceiling, { x: nw / 2, y: cy });
+      Matter.Body.setVertices(ceiling, Matter.Bodies.rectangle(nw / 2, cy, nw + 400, 120).vertices);
+      Matter.Body.setPosition(rightWall, { x: nw + 60, y: nh / 2 });
+      Matter.Body.setVertices(rightWall, Matter.Bodies.rectangle(nw + 60, nh / 2, 120, nh * 8 + 200).vertices);
+      Matter.Body.setPosition(leftWall, { x: -60, y: nh / 2 });
+      Matter.Body.setVertices(leftWall, Matter.Bodies.rectangle(-60, nh / 2, 120, nh * 8 + 200).vertices);
+
+      keepBodiesInBounds(bodies, nw, nh, Matter.Body.setPosition, Matter.Body.setVelocity);
+      if (reducedMotion) Matter.Render.world(r);
     };
 
-    window.addEventListener("resize", handleResize);
+    let resizeRaf = 0;
+    const onResize = () => {
+      cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(applySize);
+    };
+    const resizeObserver = new ResizeObserver(onResize);
+    resizeObserver.observe(sceneRef.current);
 
     // 9. Intersection Observer to drop bodies and (de)animate the scene
     // when it scrolls in/out of view. The footer mounts on every page, so
@@ -228,7 +253,8 @@ export default function PhysicsFooter() {
 
     // 10. Cleanup
     return () => {
-      window.removeEventListener("resize", handleResize);
+      cancelAnimationFrame(resizeRaf);
+      resizeObserver.disconnect();
       observer.disconnect();
       if (renderRef.current) {
         Matter.Render.stop(renderRef.current);
