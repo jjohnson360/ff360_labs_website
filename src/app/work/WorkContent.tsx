@@ -9,28 +9,50 @@ const HeroPatchbay = dynamic(() => import("@/components/HeroPatchbay"), {
 
 /*
  * Real projects, kept intentionally light for now — titles and categories
- * only, no case studies or images yet. Sourced from github.com/jjohnson360.
+ * only, no case studies or images yet. Mirrors the "Currently Working On"
+ * list on github.com/jjohnson360; websites and the game lead, audio plugins
+ * sit at the bottom. Expect this set to keep shifting while work is in flux.
  */
 const projects = [
+  {
+    title: "Dr. Pod's Apothecary Game",
+    category: "Game / Unity",
+    desc: "3D puzzle game · real-world storefront tie-in",
+  },
+  {
+    title: "FF360 Nexus",
+    category: "3D / Interactive",
+    desc: "Explorable 3D “digital HQ” · Unity 6 + Blender",
+  },
+  {
+    title: "The Governor of Crunk",
+    category: "Web / Music",
+    desc: "Artist site · 2026 album debut",
+  },
+  {
+    title: "ff360 Music",
+    category: "Web / Music",
+    desc: "Next.js portfolio · embedded audio playback",
+  },
+  {
+    title: "ff360_labs Studio Site",
+    category: "Web / Interactive",
+    desc: "Next.js · 2D-canvas + physics UI",
+  },
   {
     title: "Personal Finance Tracker",
     category: "Full-Stack / AI",
     desc: "FastAPI · PostgreSQL · React",
   },
   {
-    title: "Modular Audio Meter",
-    category: "Creative Software",
-    desc: "C++ / JUCE metering suite",
+    title: "ChordFlow",
+    category: "Audio / MIDI",
+    desc: "JUCE VST3/AU MIDI generator",
   },
   {
-    title: "Synthwave Plugin Suite",
+    title: "Ecosystem Distortion",
     category: "Audio / DSP",
-    desc: "VST3 & AU effects",
-  },
-  {
-    title: "Victorian Apothecary Environment",
-    category: "3D / Procedural",
-    desc: "Blender-scripted, Unity-ready",
+    desc: "Multi-instance JUCE · spectral partitioning",
   },
 ];
 
