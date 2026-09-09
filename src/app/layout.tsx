@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CustomCursor from "@/components/CustomCursor";
+import IntroOverlay from "@/components/IntroOverlay";
 import {
   SITE_URL,
   SITE_NAME,
@@ -125,6 +126,7 @@ export default function RootLayout({
           }}
         />
         <CustomCursor />
+        <IntroOverlay />
 
         <a
           href="#main-content"
